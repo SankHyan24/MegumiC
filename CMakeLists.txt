@@ -45,6 +45,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_executable(${_EXE_NAME_} ${SOURCES})
 aux_source_directory(${_SRC_FILE_NAME_} _SOURCE_)
 target_sources(${_EXE_NAME_} PUBLIC ${_SOURCE_})
-target_include_directories(${_EXE_NAME_} PUBLIC ${_SRC_FILE_NAME_}/include)
+target_include_directories(${_EXE_NAME_} PUBLIC ${_SRC_FILE_NAME_})
+
 set_target_properties(${_EXE_NAME_} PROPERTIES C_STANDARD 11 CXX_STANDARD 17)
 target_link_libraries(${_EXE_NAME_} koopa pthread dl)
