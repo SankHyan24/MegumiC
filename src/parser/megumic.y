@@ -1,7 +1,7 @@
 %code requires {
   #include <memory>
   #include <string>
-  #include "ast.hpp"
+  #include "ast/ast.hpp"
 
 }
 
@@ -10,11 +10,11 @@
 #include <iostream>
 #include <memory>
 #include <string>
-#include "ast.hpp"
+#include "ast/ast.hpp"
 
 // 声明 lexer 函数和错误处理函数
 int yylex();
-void yyerror(std::unique_ptr<BaseAST> &ast, const char *s);
+void yyerror(std::unique_ptr<MC::ast::BaseAST> &ast, const char *s);
 
 using namespace std;
 
@@ -23,7 +23,7 @@ using namespace std;
 // 定义 parser 函数和错误处理函数的附加参数
 // 我们需要返回一个字符串作为 AST, 所以我们把附加参数定义成字符串的智能指针
 // 解析完成后, 我们要手动修改这个参数, 把它设置成解析得到的字符串
-%parse-param { std::unique_ptr<BaseAST> &ast }
+%parse-param { std::unique_ptr<MC::ast::BaseAST> &ast }
 // yylval 的定义, 我们把它定义成了一个联合体 (union)
 // 因为 token 的值有的是字符串指针, 有的是整数
 // 之前我们在 lexer 中用到的 str_val 和 int_val 就是在这里被定义的
@@ -34,7 +34,7 @@ using namespace std;
 %union {
   std::string *str_val;
   int int_val;
-  BaseAST *ast_val;
+  MC::ast::BaseAST *ast_val;
 }
 
 // lexer 返回的所有 token 种类的声明
@@ -55,8 +55,8 @@ using namespace std;
 // $1 指代规则里第一个符号的返回值, 也就是 FuncDef 的返回值
 CompUnit
   : FuncDef {
-    auto comp_unit = make_unique<CompUnitAST>();
-    comp_unit->func_def = unique_ptr<BaseAST>($1);
+    auto comp_unit = make_unique<MC::ast::CompUnitAST>();
+    comp_unit->func_def = unique_ptr<MC::ast::BaseAST>($1);
     ast = move(comp_unit);
   }
   ;
@@ -73,10 +73,10 @@ CompUnit
 // 这种写法会省下很多内存管理的负担
 FuncDef
   : FuncType IDENT '(' ')' Block {
-    auto ast_ = new FuncDefAST();
-    ast_->func_type = unique_ptr<BaseAST>($1);
+    auto ast_ = new MC::ast::FuncDefAST();
+    ast_->func_type = unique_ptr<MC::ast::BaseAST>($1);
     ast_->ident = *unique_ptr<string>($2);
-    ast_->block = unique_ptr<BaseAST>($5);
+    ast_->block = unique_ptr<MC::ast::BaseAST>($5);
     $$ = ast_;
   }
   ;
@@ -84,7 +84,7 @@ FuncDef
 // 同上, 不再解释
 FuncType
   : INT {
-    auto ast_ = new FuncTypeAST();
+    auto ast_ = new MC::ast::FuncTypeAST();
     ast_->type_name = *unique_ptr<string>(new string("int"));
     $$ = ast_;
   }
@@ -92,8 +92,8 @@ FuncType
 
 Block
   : '{' Stmt '}' {
-    auto ast_ = new BlockAST();
-    ast_->stmt = unique_ptr<BaseAST>($2);
+    auto ast_ = new MC::ast::BlockAST();
+    ast_->stmt = unique_ptr<MC::ast::BaseAST>($2);
     $$ = ast_;
     // auto stmt = unique_ptr<string>($2);
     // $$ = new string("{ " + *stmt + " }");
@@ -104,8 +104,8 @@ Stmt
   : RETURN Number ';' {
     // auto number = unique_ptr<string>($2);
     // $$ = new string("return " + *number + ";");
-    auto ast_ = new StmtAST();
-    ast_->number= unique_ptr<BaseAST>($2);
+    auto ast_ = new MC::ast::StmtAST();
+    ast_->number= unique_ptr<MC::ast::BaseAST>($2);
     $$ = ast_;
   }
   ;
@@ -113,7 +113,7 @@ Stmt
 Number
   : INT_CONST {
     // $$ = new string(to_string($1));
-    auto ast_ = new NumberAST();
+    auto ast_ = new MC::ast::NumberAST();
     ast_->number = $1;
     $$ = ast_;
   }
@@ -123,6 +123,6 @@ Number
 
 // 定义错误处理函数, 其中第二个参数是错误信息
 // parser 如果发生错误 (例如输入的程序出现了语法错误), 就会调用这个函数
-void yyerror(unique_ptr<BaseAST> &ast, const char *s) {
+void yyerror(unique_ptr<MC::ast::BaseAST> &ast, const char *s) {
   cerr << "error: " << s << endl;
 }
