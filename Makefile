@@ -1,3 +1,12 @@
+run:
+	cd build; \
+	cmake ..; \
+	make; \
+	./mc -koopa ../test/hello.c -o hello.koopa; \
+	cd ../
+
+
+
 
 kp:
 	koopac hello.koopa | llc --filetype=obj -o hello.o
