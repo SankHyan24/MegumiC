@@ -1,10 +1,9 @@
 #pragma once
-#include <functional>
 #include <iostream>
 #include <list>
 #include <string>
 
-namespace MC::ir
+namespace MC::IR
 {
     class OpName
     {
@@ -30,7 +29,21 @@ namespace MC::ir
         bool is_null() const;
         bool operator==(const OpName &other) const;
     };
-    class IR
+
+    enum class OpCode
     {
     };
+    class IR
+    {
+    public:
+        int line, column; // position in source code
+        OpCode op_code;
+        std::string label;
+        OpName op1, op2, op3, dest;
+        std::list<IR>::iterator phi_block;
+        IR(OpCode op_code, std::string label = "");
+        void print(std::ostream &out = std::cerr, bool verbose = false) const;
+    };
+
+    using IRList = std::list<IR>;
 }

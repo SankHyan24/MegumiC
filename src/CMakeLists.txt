@@ -1,0 +1,4 @@
+aux_source_directory(./ast _AST_SRC_)
+target_sources(${_EXE_NAME_} PUBLIC ${_AST_SRC_})
+aux_source_directory(./ir _IR_SRC_)
+target_sources(${_EXE_NAME_} PUBLIC ${_IR_SRC_})

@@ -1,7 +1,7 @@
 %code requires {
-  #include <memory>
-  #include <string>
-  #include "ast/ast.hpp"
+	#include <memory>
+	#include <string>
+	#include "ast/ast.hpp"
 
 }
 
@@ -14,7 +14,7 @@
 
 // 声明 lexer 函数和错误处理函数
 int yylex();
-void yyerror(std::unique_ptr<MC::ast::BaseAST> &ast, const char *s);
+void yyerror(std::unique_ptr<MC::ast::node::BaseAST> &ast, const char *s);
 
 using namespace std;
 
@@ -23,7 +23,7 @@ using namespace std;
 // 定义 parser 函数和错误处理函数的附加参数
 // 我们需要返回一个字符串作为 AST, 所以我们把附加参数定义成字符串的智能指针
 // 解析完成后, 我们要手动修改这个参数, 把它设置成解析得到的字符串
-%parse-param { std::unique_ptr<MC::ast::BaseAST> &ast }
+%parse-param { std::unique_ptr<MC::ast::node::BaseAST> &ast }
 // yylval 的定义, 我们把它定义成了一个联合体 (union)
 // 因为 token 的值有的是字符串指针, 有的是整数
 // 之前我们在 lexer 中用到的 str_val 和 int_val 就是在这里被定义的
@@ -32,97 +32,140 @@ using namespace std;
 
 
 %union {
-  std::string *str_val;
-  int int_val;
-  MC::ast::BaseAST *ast_val;
+	int token;
+	std::string *str_val;
+	int int_val;
+	MC::ast::node::BaseAST *ast_val;
+	MC::ast::node::Expression *expression_val;
+	MC::ast::node::Statement *statement_val;
 }
 
 // lexer 返回的所有 token 种类的声明
 // 注意 IDENT 和 INT_CONST 会返回 token 的值, 分别对应 str_val 和 int_val
-%token INT RETURN
+%token INT RETURN 
+%token LE_OP GE_OP EQ_OP NE_OP
+%token AND_OP OR_OP
 %token <str_val> IDENT
-%token <int_val> INT_CONST
+%token <int_val> INT_CONST 
 
-// 非终结符的类型定义
-%type <ast_val> FuncDef FuncType Block Stmt
-%type <ast_val> Number
+
+%type <int_val> UnaryOp
+%type <ast_val> FuncDef FuncType Block 
+%type <expression_val> Exp UnaryExp PrimaryExp MulExp AddExp RelExp EqExp LAndExp LOrExp Number
+%type <statement_val> Stmt
 %%
 
-// 开始符, CompUnit ::= FuncDef, 大括号后声明了解析完成后 parser 要做的事情
-// 之前我们定义了 FuncDef 会返回一个 str_val, 也就是字符串指针
-// 而 parser 一旦解析完 CompUnit, 就说明所有的 token 都被解析了, 即解析结束了
-// 此时我们应该把 FuncDef 返回的结果收集起来, 作为 AST 传给调用 parser 的函数
-// $1 指代规则里第一个符号的返回值, 也就是 FuncDef 的返回值
+
 CompUnit
-  : FuncDef {
-    auto comp_unit = make_unique<MC::ast::CompUnitAST>();
-    comp_unit->func_def = unique_ptr<MC::ast::BaseAST>($1);
-    ast = move(comp_unit);
-  }
-  ;
+	: FuncDef {
+		auto comp_unit = make_unique<MC::ast::node::CompUnitAST>();
+		comp_unit->func_def = unique_ptr<MC::ast::node::BaseAST>($1);
+		ast = move(comp_unit);
+	}
+	;
 
-// FuncDef ::= FuncType IDENT '(' ')' Block;
-// 我们这里可以直接写 '(' 和 ')', 因为之前在 lexer 里已经处理了单个字符的情况
-// 解析完成后, 把这些符号的结果收集起来, 然后拼成一个新的字符串, 作为结果返回
-// $$ 表示非终结符的返回值, 我们可以通过给这个符号赋值的方法来返回结果
-// 你可能会问, FuncType, IDENT 之类的结果已经是字符串指针了
-// 为什么还要用 unique_ptr 接住它们, 然后再解引用, 把它们拼成另一个字符串指针呢
-// 因为所有的字符串指针都是我们 new 出来的, new 出来的内存一定要 delete
-// 否则会发生内存泄漏, 而 unique_ptr 这种智能指针可以自动帮我们 delete
-// 虽然此处你看不出用 unique_ptr 和手动 delete 的区别, 但当我们定义了 AST 之后
-// 这种写法会省下很多内存管理的负担
+
 FuncDef
-  : FuncType IDENT '(' ')' Block {
-    auto ast_ = new MC::ast::FuncDefAST();
-    ast_->func_type = unique_ptr<MC::ast::BaseAST>($1);
-    ast_->ident = *unique_ptr<string>($2);
-    ast_->block = unique_ptr<MC::ast::BaseAST>($5);
-    $$ = ast_;
-  }
-  ;
+	: FuncType IDENT '(' ')' Block {
+		auto ast_ = new MC::ast::node::FuncDefAST();
+		ast_->func_type = unique_ptr<MC::ast::node::BaseAST>($1);
+		ast_->ident = *unique_ptr<string>($2);
+		ast_->block = unique_ptr<MC::ast::node::BaseAST>($5);
+		$$ = ast_;
+	}
+	;
 
-// 同上, 不再解释
 FuncType
-  : INT {
-    auto ast_ = new MC::ast::FuncTypeAST();
-    ast_->type_name = *unique_ptr<string>(new string("int"));
-    $$ = ast_;
-  }
-  ;
+	: INT {
+		auto ast_ = new MC::ast::node::FuncTypeAST();
+		ast_->type_name = *unique_ptr<string>(new string("int"));
+		$$ = ast_;
+	}
+	;
 
 Block
-  : '{' Stmt '}' {
-    auto ast_ = new MC::ast::BlockAST();
-    ast_->stmt = unique_ptr<MC::ast::BaseAST>($2);
-    $$ = ast_;
-    // auto stmt = unique_ptr<string>($2);
-    // $$ = new string("{ " + *stmt + " }");
-  }
-  ;
+	: '{' Stmt '}' {
+		auto ast_ = new MC::ast::node::BlockAST();
+		ast_->stmt = unique_ptr<MC::ast::node::BaseAST>($2);
+		$$ = ast_;
+		// auto stmt = unique_ptr<string>($2);
+		// $$ = new string("{ " + *stmt + " }");
+	}
+	;
 
 Stmt
-  : RETURN Number ';' {
-    // auto number = unique_ptr<string>($2);
-    // $$ = new string("return " + *number + ";");
-    auto ast_ = new MC::ast::StmtAST();
-    ast_->number= unique_ptr<MC::ast::BaseAST>($2);
-    $$ = ast_;
-  }
-  ;
+	: RETURN Exp ';'{
+		auto ast_ = new MC::ast::node::ReturnStatement();
+		ast_->exp = unique_ptr<MC::ast::node::Expression>($2);
+		$$ = ast_;
+	}
+	;
+
+Exp 
+	: LOrExp ;
+
+PrimaryExp
+	: '(' Exp ')'{ $$ = $2;} //sc
+	| Number;
 
 Number
-  : INT_CONST {
-    // $$ = new string(to_string($1));
-    auto ast_ = new MC::ast::NumberAST();
-    ast_->number = $1;
-    $$ = ast_;
-  }
-  ;
+	: INT_CONST {
+		// $$ = new string(to_string($1));
+		auto ast_ = new MC::ast::node::NumberAST();
+		ast_->number = $1;
+		$$ = ast_;
+	}
+	;
+
+UnaryExp
+	: PrimaryExp 
+	| UnaryOp UnaryExp {
+		auto ast_ = new MC::ast::node::UnaryExpression($1,$2);
+		// ast_->op = $1;
+		// ast_->rhs = unique_ptr<MC::ast::node::Expression>($2);
+		$$ = ast_;
+	};//sc
+
+UnaryOp
+	: '+' {$$ = '+';}
+	| '-' {$$ = '-';}
+	| '!' {$$ = '!';};//sc
+
+MulExp
+	: UnaryExp 
+	| MulExp '*' UnaryExp {}//sc
+	| MulExp '/' UnaryExp {}//sc
+	| MulExp '%' UnaryExp {};//sc
+
+AddExp
+	: MulExp 
+	| AddExp '+' MulExp {}//sc
+	| AddExp '-' MulExp {};//sc
+
+RelExp
+	: AddExp 
+	| RelExp '<' AddExp {}//sc
+	| RelExp '>' AddExp {}//sc
+	| RelExp LE_OP AddExp {}//sc
+	| RelExp GE_OP AddExp {};//sc
+
+EqExp
+	: RelExp
+	| EqExp EQ_OP RelExp {}//sc
+	| EqExp NE_OP RelExp {};//sc
+
+LAndExp
+	: EqExp
+	| LAndExp AND_OP EqExp {};//sc
+
+LOrExp
+	: LAndExp 
+	| LOrExp OR_OP LAndExp {};//sc
 
 %%
 
 // 定义错误处理函数, 其中第二个参数是错误信息
 // parser 如果发生错误 (例如输入的程序出现了语法错误), 就会调用这个函数
-void yyerror(unique_ptr<MC::ast::BaseAST> &ast, const char *s) {
-  cerr << "error: " << s << endl;
+void yyerror(unique_ptr<MC::ast::node::BaseAST> &ast, const char *s) {
+	cerr << "error: " << s << endl;
 }
