@@ -7,23 +7,46 @@
 // 所有 AST 的基类
 namespace MC::ast::node
 {
+
 	class BaseAST
 	{
 	public:
+		static int rec_depth;
 		virtual ~BaseAST() = default;
-		virtual void Dump() const = 0;
+		virtual void Dump();
 		void generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir);
 
+	protected:
+		static void _printTabs(int j = 0)
+		{
+			std::string tabs = "";
+			int len = std::max(0, rec_depth + j);
+			for (int i = 0; i < len; i++)
+				tabs += "\t";
+			std::cout << tabs;
+		}
+
 	private:
+		virtual void _dump() const = 0;
 		virtual void _generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir);
 	};
 
 	class Expression : public BaseAST
 	{
+	public:
+		void Dump();
+
+	private:
+		virtual void _dump() const = 0;
 	};
 
 	class Statement : public Expression
 	{
+	public:
+		void Dump();
+
+	private:
+		virtual void _dump() const = 0;
 	};
 
 	class Declare : public BaseAST
@@ -34,11 +57,14 @@ namespace MC::ast::node
 	{
 	public:
 		std::unique_ptr<BaseAST> func_def;
-		void Dump() const override
+
+	private:
+		void _dump() const override
 		{
-			std::cout << "CompUnitAST { ";
+			std::cout << "CompUnitAST {" << std::endl;
 			func_def->Dump();
-			std::cout << " }" << std::endl;
+			_printTabs(-1);
+			std::cout << "}" << std::endl;
 		}
 
 	private:
@@ -51,13 +77,15 @@ namespace MC::ast::node
 		std::unique_ptr<BaseAST> func_type;
 		std::string ident;
 		std::unique_ptr<BaseAST> block;
-		void Dump() const override
+
+	private:
+		void _dump() const override
 		{
-			std::cout << "FuncDefAST { ";
+			std::cout << "FuncDefAST " << ident << "()" << std::endl;
 			func_type->Dump();
-			std::cout << ", " << ident << ", ";
 			block->Dump();
-			std::cout << " }";
+			_printTabs(-1);
+			std::cout << "}" << std::endl;
 		}
 	};
 
@@ -65,9 +93,11 @@ namespace MC::ast::node
 	{
 	public:
 		std::string type_name;
-		void Dump() const override
+
+	private:
+		void _dump() const override
 		{
-			std::cout << "FuncTypeAST { " << type_name << " }";
+			std::cout << "FuncTypeAST {" << type_name << "}" << std::endl;
 		}
 	};
 
@@ -75,11 +105,14 @@ namespace MC::ast::node
 	{
 	public:
 		std::unique_ptr<BaseAST> stmt;
-		void Dump() const override
+
+	private:
+		void _dump() const override
 		{
-			std::cout << "BlockAST { ";
+			std::cout << "BlockAST {" << std::endl;
 			stmt->Dump();
-			std::cout << " }";
+			_printTabs(-1);
+			std::cout << "}" << std::endl;
 		}
 	};
 
@@ -87,11 +120,14 @@ namespace MC::ast::node
 	{
 	public:
 		std::unique_ptr<BaseAST> number;
-		void Dump() const override
+
+	private:
+		void _dump() const override
 		{
-			std::cout << "Stmt { ";
+			std::cout << "Stmt {" << std::endl;
 			number->Dump();
-			std::cout << " }";
+			_printTabs(-1);
+			std::cout << "}" << std::endl;
 		}
 	};
 
@@ -99,7 +135,9 @@ namespace MC::ast::node
 	{
 	public:
 		int number;
-		void Dump() const override
+
+	private:
+		void _dump() const override
 		{
 			std::cout << number;
 		}
@@ -111,7 +149,9 @@ namespace MC::ast::node
 		MC::IR::BinOp op;
 		std::unique_ptr<Expression> lhs, rhs;
 		BinaryExpression(Expression *lhs, MC::IR::BinOp op, Expression *rhs) : op(op), lhs(std::move(lhs)), rhs(std::move(rhs)) {}
-		void Dump() const override
+
+	private:
+		void _dump() const override
 		{
 			std::cout << " binE( ";
 			this->lhs->Dump();
@@ -121,18 +161,15 @@ namespace MC::ast::node
 		}
 	};
 
-	// class PrimaryExpression : public Expression
-	// {
-	// public:
-	// };
-
 	class UnaryExpression : public Expression
 	{
 	public:
 		char op;
 		std::unique_ptr<Expression> rhs;
 		UnaryExpression(int op, Expression *rhs) : op(op), rhs(std::move(rhs)) {}
-		void Dump() const override
+
+	private:
+		void _dump() const override
 		{
 			std::cout << "UnaE" << this->op << "{ ";
 			this->rhs->Dump();
@@ -146,11 +183,13 @@ namespace MC::ast::node
 		std::unique_ptr<Expression> exp;
 		ReturnStatement(Expression *exp) : exp(std::move(exp)) {}
 		ReturnStatement() {}
-		void Dump() const override
+
+	private:
+		void _dump() const override
 		{
 			std::cout << "ReturnStatement { ";
 			exp->Dump();
-			std::cout << " }";
+			std::cout << " }" << std::endl;
 		}
 	};
 }

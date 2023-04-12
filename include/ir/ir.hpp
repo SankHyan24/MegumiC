@@ -3,6 +3,7 @@
 #include <list>
 #include <string>
 #include <iostream>
+#include <functional>
 
 namespace MC::IR
 {
@@ -53,6 +54,7 @@ namespace MC::IR
     enum class OpCode
     {
     };
+
     class IR
     {
     public:
@@ -62,6 +64,9 @@ namespace MC::IR
         OpName op1, op2, op3, dest;
         std::list<IR>::iterator phi_block;
         IR(OpCode op_code, std::string label = "");
+
+        bool some(std::function<bool(const MC::IR::OpName &)> callback, bool include_dest = true) const;
+        void forEachOp(std::function<void(const MC::IR::OpName &)> callback, bool include_dest = true) const;
         void print(std::ostream &out = std::cerr, bool verbose = false) const;
     };
 

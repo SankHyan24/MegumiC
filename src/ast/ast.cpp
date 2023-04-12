@@ -5,6 +5,15 @@ using namespace MC::ast::node;
 namespace
 {
     std::stack<BaseAST *> nodes;
+    int rec_depth = 0;
+}
+int BaseAST::rec_depth = 0;
+void BaseAST::Dump()
+{
+    _printTabs();
+    rec_depth++;
+    this->_dump();
+    rec_depth--;
 }
 
 void BaseAST::generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir)
@@ -20,4 +29,18 @@ void BaseAST::generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir)
         nodes.pop();
         throw;
     }
+}
+
+void Expression::Dump()
+{
+    // _printTabs();
+    this->_dump();
+}
+
+void Statement::Dump()
+{
+    _printTabs();
+    rec_depth++;
+    this->_dump();
+    rec_depth--;
 }
