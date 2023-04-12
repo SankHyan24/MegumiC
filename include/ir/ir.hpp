@@ -2,9 +2,29 @@
 #include <iostream>
 #include <list>
 #include <string>
+#include <iostream>
 
 namespace MC::IR
 {
+    enum class BinOp
+    {
+        ADD,
+        SUB,
+        MUL,
+        DIV,
+        MOD,
+        LE,
+        GE,
+        LT,
+        GT,
+        EQ,
+        NE,
+        AND,
+        OR,
+    };
+    // overload << operation of BinOp
+    std::ostream &operator<<(std::ostream &os, const BinOp &p);
+
     class OpName
     {
     protected:

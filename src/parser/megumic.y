@@ -38,18 +38,18 @@ using namespace std;
 	MC::ast::node::BaseAST *ast_val;
 	MC::ast::node::Expression *expression_val;
 	MC::ast::node::Statement *statement_val;
+	MC::IR::BinOp binop;
 }
 
 // lexer 返回的所有 token 种类的声明
 // 注意 IDENT 和 INT_CONST 会返回 token 的值, 分别对应 str_val 和 int_val
 %token INT RETURN 
-%token LE_OP GE_OP EQ_OP NE_OP
-%token AND_OP OR_OP
-%token <str_val> IDENT
+%token <str_val> IDENT AND_OP OR_OP 
 %token <int_val> INT_CONST 
-
-
-%type <int_val> UnaryOp
+%token <binop> LE_OP GE_OP EQ_OP NE_OP
+/* %left LE_OP GE_OP EQ_OP NE_OP */
+%type <binop>  MulOp RelOp AddOp EqOp
+%type <int_val> UnaryOp  
 %type <ast_val> FuncDef FuncType Block 
 %type <expression_val> Exp UnaryExp PrimaryExp MulExp AddExp RelExp EqExp LAndExp LOrExp Number
 %type <statement_val> Stmt
@@ -88,8 +88,6 @@ Block
 		auto ast_ = new MC::ast::node::BlockAST();
 		ast_->stmt = unique_ptr<MC::ast::node::BaseAST>($2);
 		$$ = ast_;
-		// auto stmt = unique_ptr<string>($2);
-		// $$ = new string("{ " + *stmt + " }");
 	}
 	;
 
@@ -110,7 +108,6 @@ PrimaryExp
 
 Number
 	: INT_CONST {
-		// $$ = new string(to_string($1));
 		auto ast_ = new MC::ast::node::NumberAST();
 		ast_->number = $1;
 		$$ = ast_;
@@ -121,46 +118,68 @@ UnaryExp
 	: PrimaryExp 
 	| UnaryOp UnaryExp {
 		auto ast_ = new MC::ast::node::UnaryExpression($1,$2);
-		// ast_->op = $1;
-		// ast_->rhs = unique_ptr<MC::ast::node::Expression>($2);
 		$$ = ast_;
-	};//sc
+	};
 
 UnaryOp
 	: '+' {$$ = '+';}
 	| '-' {$$ = '-';}
-	| '!' {$$ = '!';};//sc
+	| '!' {$$ = '!';};
+
+MulOp
+	: '*' {$$ = MC::IR::BinOp::MUL;}
+	| '/' {$$ = MC::IR::BinOp::DIV;}
+	| '%' {$$ = MC::IR::BinOp::MOD;};
+
+AddOp
+	: '+' {$$ = MC::IR::BinOp::ADD;}
+	| '-' {$$ = MC::IR::BinOp::SUB;};
+
+RelOp
+	: '<' {$$ = MC::IR::BinOp::LT;}
+	| '>' {$$ = MC::IR::BinOp::GT;}
+	| LE_OP {$$ =  MC::IR::BinOp::LE;}
+	| GE_OP {$$ =  MC::IR::BinOp::GE;};
+
+EqOp
+	: EQ_OP {$$ = MC::IR::BinOp::EQ;}
+	| NE_OP {$$ = MC::IR::BinOp::NE;};
 
 MulExp
 	: UnaryExp 
-	| MulExp '*' UnaryExp {}//sc
-	| MulExp '/' UnaryExp {}//sc
-	| MulExp '%' UnaryExp {};//sc
+	| MulExp MulOp UnaryExp {
+		auto ast_ = new MC::ast::node::BinaryExpression($1,$2,$3);
+		$$ = ast_;};//sc
 
 AddExp
 	: MulExp 
-	| AddExp '+' MulExp {}//sc
-	| AddExp '-' MulExp {};//sc
+	| AddExp AddOp MulExp {
+		auto ast_ = new MC::ast::node::BinaryExpression($1,$2,$3);
+		$$ = ast_;};
 
 RelExp
 	: AddExp 
-	| RelExp '<' AddExp {}//sc
-	| RelExp '>' AddExp {}//sc
-	| RelExp LE_OP AddExp {}//sc
-	| RelExp GE_OP AddExp {};//sc
+	| RelExp RelOp AddExp {
+		auto ast_ = new MC::ast::node::BinaryExpression($1,$2,$3);
+		$$ = ast_;}//sc
 
 EqExp
 	: RelExp
-	| EqExp EQ_OP RelExp {}//sc
-	| EqExp NE_OP RelExp {};//sc
+	| EqExp EqOp RelExp {
+		auto ast_ = new MC::ast::node::BinaryExpression($1,$2,$3);
+		$$ = ast_;};
 
 LAndExp
 	: EqExp
-	| LAndExp AND_OP EqExp {};//sc
+	| LAndExp AND_OP EqExp {
+		auto ast_ = new MC::ast::node::BinaryExpression($1,MC::IR::BinOp::AND,$3);
+		$$ = ast_;};//sc
 
 LOrExp
 	: LAndExp 
-	| LOrExp OR_OP LAndExp {};//sc
+	| LOrExp OR_OP LAndExp {
+		auto ast_ = new MC::ast::node::BinaryExpression($1,MC::IR::BinOp::OR,$3);
+		$$ = ast_;};//sc
 
 %%
 

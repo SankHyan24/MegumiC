@@ -20,12 +20,6 @@ namespace MC::ast::node
 
 	class Expression : public BaseAST
 	{
-		// public:
-		// 	virtual ~Expression() = default;
-		// 	virtual void Dump() const = 0;
-
-		// private:
-		// 	virtual void _generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir);
 	};
 
 	class Statement : public Expression
@@ -114,12 +108,23 @@ namespace MC::ast::node
 	class BinaryExpression : public Expression
 	{
 	public:
+		MC::IR::BinOp op;
+		std::unique_ptr<Expression> lhs, rhs;
+		BinaryExpression(Expression *lhs, MC::IR::BinOp op, Expression *rhs) : op(op), lhs(std::move(lhs)), rhs(std::move(rhs)) {}
+		void Dump() const override
+		{
+			std::cout << " binE( ";
+			this->lhs->Dump();
+			std::cout << " " << this->op << " ";
+			this->rhs->Dump();
+			std::cout << " ) ";
+		}
 	};
 
-	class PrimaryExpression : public Expression
-	{
-	public:
-	};
+	// class PrimaryExpression : public Expression
+	// {
+	// public:
+	// };
 
 	class UnaryExpression : public Expression
 	{
@@ -129,7 +134,7 @@ namespace MC::ast::node
 		UnaryExpression(int op, Expression *rhs) : op(op), rhs(std::move(rhs)) {}
 		void Dump() const override
 		{
-			std::cout << "Unary" << this->op << "{ ";
+			std::cout << "UnaE" << this->op << "{ ";
 			this->rhs->Dump();
 			std::cout << " }";
 		}
