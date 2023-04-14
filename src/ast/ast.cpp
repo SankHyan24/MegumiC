@@ -7,7 +7,9 @@ namespace
     std::stack<BaseAST *> nodes;
     int rec_depth = 0;
 }
+
 int BaseAST::rec_depth = 0;
+
 void BaseAST::Dump()
 {
     _printTabs();
@@ -33,7 +35,6 @@ void BaseAST::generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir)
 
 void Expression::Dump()
 {
-    // _printTabs();
     this->_dump();
 }
 

@@ -58,16 +58,6 @@ namespace MC::IR
     class IR
     {
     public:
-        int line, column; // position in source code
-        OpCode op_code;
-        std::string label;
-        OpName op1, op2, op3, dest;
-        std::list<IR>::iterator phi_block;
-        IR(OpCode op_code, std::string label = "");
-
-        bool some(std::function<bool(const MC::IR::OpName &)> callback, bool include_dest = true) const;
-        void forEachOp(std::function<void(const MC::IR::OpName &)> callback, bool include_dest = true) const;
-        void print(std::ostream &out = std::cerr, bool verbose = false) const;
     };
 
     using IRList = std::list<IR>;

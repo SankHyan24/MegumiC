@@ -57,69 +57,34 @@ using namespace std;
 
 
 CompUnit
-	: FuncDef {
-		auto comp_unit = make_unique<MC::ast::node::CompUnitAST>();
-		comp_unit->func_def = unique_ptr<MC::ast::node::BaseAST>($1);
-		ast = move(comp_unit);
-	}
-	;
+	: FuncDef { ast = move(make_unique<MC::ast::node::CompUnitAST>($1)); };
 
 
 FuncDef
-	: FuncType IDENT '(' ')' Block {
-		auto ast_ = new MC::ast::node::FuncDefAST();
-		ast_->func_type = unique_ptr<MC::ast::node::BaseAST>($1);
-		ast_->ident = *unique_ptr<string>($2);
-		ast_->block = unique_ptr<MC::ast::node::BaseAST>($5);
-		$$ = ast_;
-	}
-	;
+	: FuncType IDENT '(' ')' Block { $$ = new MC::ast::node::FuncDefAST($1,$2,$5);};
 
 FuncType
-	: INT {
-		auto ast_ = new MC::ast::node::FuncTypeAST();
-		ast_->type_name = *unique_ptr<string>(new string("int"));
-		$$ = ast_;
-	}
-	;
+	: INT { $$ = new MC::ast::node::FuncTypeAST(new string("int")); } ;
 
 Block
-	: '{' Stmt '}' {
-		auto ast_ = new MC::ast::node::BlockAST();
-		ast_->stmt = unique_ptr<MC::ast::node::BaseAST>($2);
-		$$ = ast_;
-	}
-	;
+	: '{' Stmt '}' { $$ = new MC::ast::node::BlockAST($2); } ;
 
 Stmt
-	: RETURN Exp ';'{
-		auto ast_ = new MC::ast::node::ReturnStatement();
-		ast_->exp = unique_ptr<MC::ast::node::Expression>($2);
-		$$ = ast_;
-	}
-	;
+	: RETURN Exp ';'{ $$ = new MC::ast::node::ReturnStatement($2); } ;
 
 Exp 
 	: LOrExp ;
 
 PrimaryExp
-	: '(' Exp ')'{ $$ = $2;} //sc
+	: '(' Exp ')'{ $$ = $2;} 
 	| Number;
 
 Number
-	: INT_CONST {
-		auto ast_ = new MC::ast::node::NumberAST();
-		ast_->number = $1;
-		$$ = ast_;
-	}
-	;
+	: INT_CONST {$$ = new MC::ast::node::NumberAST($1);};
 
 UnaryExp
 	: PrimaryExp 
-	| UnaryOp UnaryExp {
-		auto ast_ = new MC::ast::node::UnaryExpression($1,$2);
-		$$ = ast_;
-	};
+	| UnaryOp UnaryExp { $$= new MC::ast::node::UnaryExpression($1,$2);};
 
 UnaryOp
 	: '+' {$$ = '+';}
@@ -147,44 +112,30 @@ EqOp
 
 MulExp
 	: UnaryExp 
-	| MulExp MulOp UnaryExp {
-		auto ast_ = new MC::ast::node::BinaryExpression($1,$2,$3);
-		$$ = ast_;};//sc
+	| MulExp MulOp UnaryExp {$$ = new MC::ast::node::BinaryExpression($1,$2,$3);};
 
 AddExp
 	: MulExp 
-	| AddExp AddOp MulExp {
-		auto ast_ = new MC::ast::node::BinaryExpression($1,$2,$3);
-		$$ = ast_;};
+	| AddExp AddOp MulExp {$$ = new MC::ast::node::BinaryExpression($1,$2,$3);};
 
 RelExp
 	: AddExp 
-	| RelExp RelOp AddExp {
-		auto ast_ = new MC::ast::node::BinaryExpression($1,$2,$3);
-		$$ = ast_;}//sc
+	| RelExp RelOp AddExp {$$ = new MC::ast::node::BinaryExpression($1,$2,$3);};
 
 EqExp
 	: RelExp
-	| EqExp EqOp RelExp {
-		auto ast_ = new MC::ast::node::BinaryExpression($1,$2,$3);
-		$$ = ast_;};
+	| EqExp EqOp RelExp { $$ = new MC::ast::node::BinaryExpression($1,$2,$3);};
 
 LAndExp
 	: EqExp
-	| LAndExp AND_OP EqExp {
-		auto ast_ = new MC::ast::node::BinaryExpression($1,MC::IR::BinOp::AND,$3);
-		$$ = ast_;};//sc
+	| LAndExp AND_OP EqExp { $$ = new MC::ast::node::BinaryExpression($1,MC::IR::BinOp::AND,$3);};
 
 LOrExp
 	: LAndExp 
-	| LOrExp OR_OP LAndExp {
-		auto ast_ = new MC::ast::node::BinaryExpression($1,MC::IR::BinOp::OR,$3);
-		$$ = ast_;};//sc
+	| LOrExp OR_OP LAndExp { $$ = new MC::ast::node::BinaryExpression($1,MC::IR::BinOp::OR,$3);};
 
 %%
 
-// 定义错误处理函数, 其中第二个参数是错误信息
-// parser 如果发生错误 (例如输入的程序出现了语法错误), 就会调用这个函数
 void yyerror(unique_ptr<MC::ast::node::BaseAST> &ast, const char *s) {
 	cerr << "error: " << s << endl;
 }

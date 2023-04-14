@@ -13,11 +13,12 @@ namespace MC::ast::node
 	public:
 		static int rec_depth;
 		virtual ~BaseAST() = default;
-		virtual void Dump();
+
+		virtual void Dump(); // Dump the AST
 		void generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir);
 
 	protected:
-		static void _printTabs(int j = 0)
+		static void _printTabs(int j = 0) // This function only used in dump
 		{
 			std::string tabs = "";
 			int len = std::max(0, rec_depth + j);
@@ -57,6 +58,7 @@ namespace MC::ast::node
 	{
 	public:
 		std::unique_ptr<BaseAST> func_def;
+		CompUnitAST(BaseAST *func_def) : func_def(std::move(func_def)) {}
 
 	private:
 		void _dump() const override
@@ -75,13 +77,15 @@ namespace MC::ast::node
 	{
 	public:
 		std::unique_ptr<BaseAST> func_type;
-		std::string ident;
+		std::unique_ptr<std::string> ident;
 		std::unique_ptr<BaseAST> block;
+		FuncDefAST(BaseAST *func_type, std::string *ident, BaseAST *block)
+			: func_type(std::move(func_type)), ident(std::move(ident)), block(std::move(block)) {}
 
 	private:
 		void _dump() const override
 		{
-			std::cout << "FuncDefAST " << ident << "()" << std::endl;
+			std::cout << "FuncDefAST " << *ident << "()" << std::endl;
 			func_type->Dump();
 			block->Dump();
 			_printTabs(-1);
@@ -92,12 +96,13 @@ namespace MC::ast::node
 	class FuncTypeAST : public BaseAST
 	{
 	public:
-		std::string type_name;
+		std::unique_ptr<std::string> type_name;
+		FuncTypeAST(std::string *arg) : type_name(std::move(arg)) {}
 
 	private:
 		void _dump() const override
 		{
-			std::cout << "FuncTypeAST {" << type_name << "}" << std::endl;
+			std::cout << "FuncTypeAST {" << *type_name << "}" << std::endl;
 		}
 	};
 
@@ -105,6 +110,7 @@ namespace MC::ast::node
 	{
 	public:
 		std::unique_ptr<BaseAST> stmt;
+		BlockAST(BaseAST *stmt) : stmt(std::move(stmt)) {}
 
 	private:
 		void _dump() const override
@@ -135,6 +141,7 @@ namespace MC::ast::node
 	{
 	public:
 		int number;
+		NumberAST(int number) : number(number) {}
 
 	private:
 		void _dump() const override
@@ -182,7 +189,6 @@ namespace MC::ast::node
 	public:
 		std::unique_ptr<Expression> exp;
 		ReturnStatement(Expression *exp) : exp(std::move(exp)) {}
-		ReturnStatement() {}
 
 	private:
 		void _dump() const override
