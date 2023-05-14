@@ -33,6 +33,7 @@ Hexadecimal   0[xX][0-9a-fA-F]+
 {LineComment}   { /* 忽略, 不做任何操作 */ }
 
 "int"           { return INT; }/*Key words */
+"const"         { return CONST; }/*Key words */
 "return"        { return RETURN; }
 "<="            { return LE_OP; }
 ">="            { return GE_OP; }
@@ -40,6 +41,9 @@ Hexadecimal   0[xX][0-9a-fA-F]+
 "!="            { return NE_OP; }
 "&&"            { return AND_OP; }
 "||"            { return OR_OP; }
+
+";"     { return SEMICOLON; }
+","     { return COMMA; }
 
 {Identifier}    { yylval.str_val = new string(yytext); return IDENT; }
 

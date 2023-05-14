@@ -38,45 +38,104 @@ using namespace std;
 	MC::ast::node::BaseAST *ast_val;
 	MC::ast::node::Expression *expression_val;
 	MC::ast::node::Statement *statement_val;
+	MC::ast::node::BlockAST *block_val;
+	MC::ast::node::DeclareStatement *declarestmt_val;
+	MC::ast::node::Declare *declare_val;
 	MC::IR::BinOp binop;
+
 }
 
 // lexer 返回的所有 token 种类的声明
 // 注意 IDENT 和 INT_CONST 会返回 token 的值, 分别对应 str_val 和 int_val
-%token INT RETURN 
-%token <str_val> IDENT AND_OP OR_OP 
+%token <token> INT RETURN CONST SEMICOLON COMMA
+%token <str_val> IDENT AND_OP OR_OP LVal
 %token <int_val> INT_CONST 
 %token <binop> LE_OP GE_OP EQ_OP NE_OP
 /* %left LE_OP GE_OP EQ_OP NE_OP */
+/* %type <str_val>  */
+
+%type <token> BType 
 %type <binop>  MulOp RelOp AddOp EqOp
 %type <int_val> UnaryOp  
 %type <ast_val> FuncDef FuncType Block 
-%type <expression_val> Exp UnaryExp PrimaryExp MulExp AddExp RelExp EqExp LAndExp LOrExp Number
-%type <statement_val> Stmt
+%type <expression_val> Exp UnaryExp PrimaryExp MulExp AddExp RelExp EqExp LAndExp LOrExp Number 
+
+%type <declare_val> ConstDef
+%type <declarestmt_val> ConstDeclStmt VarDeclStmt  VarDecl ConstDecl
+%type <block_val> BlockItems 
+%type <statement_val> Decl  VarDef  Stmt BlockItem
+
+
 %%
 
 
 CompUnit
 	: FuncDef { ast = move(make_unique<MC::ast::node::CompUnitAST>($1)); };
 
-
+// 函数定义
 FuncDef
-	: FuncType IDENT '(' ')' Block { $$ = new MC::ast::node::FuncDefAST($1,$2,$5);};
+	: FuncType IDENT '(' ')' Block { $$ = new MC::ast::node::FuncDefAST($1,$2,$5);}
 
+// 
 FuncType
 	: INT { $$ = new MC::ast::node::FuncTypeAST(new string("int")); } ;
 
 Block
-	: '{' Stmt '}' { $$ = new MC::ast::node::BlockAST($2); } ;
+	: '{' BlockItems '}' { $$ = $2; } 
+	| '{' '}'{ $$ = new MC::ast::node::BlockAST();}
+
+BlockItems
+	: BlockItems BlockItem { $$ = $1;
+	$$->stmt.push_back($2);
+	}
+	| BlockItem { $$ = new MC::ast::node::BlockAST(); $$->stmt.push_back($1); };
+
+BlockItem
+	: Decl | Stmt;
+
+// 声明语句
+Decl
+	: ConstDeclStmt
+	| VarDeclStmt
+
+// 常数声明语句 const int a=1,b=2;
+ConstDeclStmt
+	: ConstDecl SEMICOLON { $$ = $1; } ;
+
+ConstDecl
+	: CONST BType ConstDef { $$ = new MC::ast::node::DeclareStatement($2); $$->list.push_back($3);} 
+	| ConstDecl COMMA ConstDef { $$->list.push_back($3); };
+
+ConstDef 
+	: IDENT '=' Exp { $$ = new MC::ast::node::VarDeclareWithInit($1, $3, true);};
+
+
+VarDeclStmt
+	: VarDecl SEMICOLON { $$ = $1; } ;
+
+VarDecl
+	: BType VarDef {$$ = new MC::ast::node::DeclareStatement($1); $$->list.push_back($2);} 
+	| VarDecl COMMA VarDef { $$->list.push_back($3); };
+
+VarDef
+	: IDENT { $$ =  new MC::ast::node::VarDeclare($1);}
+	| IDENT '=' Exp {$$ = new MC::ast::node::VarDeclareWithInit($1, $3, true); };
+
+
+
+BType
+	: INT ;
 
 Stmt
 	: RETURN Exp ';'{ $$ = new MC::ast::node::ReturnStatement($2); } ;
 
+//
 Exp 
 	: LOrExp ;
 
 PrimaryExp
 	: '(' Exp ')'{ $$ = $2;} 
+	/* | LVal */
 	| Number;
 
 Number

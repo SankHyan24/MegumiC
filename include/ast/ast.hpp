@@ -61,6 +61,7 @@ namespace MC::ast::node
 		CompUnitAST(BaseAST *func_def) : func_def(std::move(func_def)) {}
 
 	private:
+		virtual void _generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir) override;
 		void _dump() const override
 		{
 			std::cout << "CompUnitAST {" << std::endl;
@@ -68,9 +69,6 @@ namespace MC::ast::node
 			_printTabs(-1);
 			std::cout << "}" << std::endl;
 		}
-
-	private:
-		virtual void _generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir) override;
 	};
 
 	class FuncDefAST : public BaseAST
@@ -109,14 +107,22 @@ namespace MC::ast::node
 	class BlockAST : public BaseAST
 	{
 	public:
-		std::unique_ptr<BaseAST> stmt;
-		BlockAST(BaseAST *stmt) : stmt(std::move(stmt)) {}
+		std::vector<BaseAST *> stmt;
+		BlockAST() {}
+		BlockAST(const BlockAST &c)
+		{
+			for (auto &i : c.stmt)
+			{
+				this->stmt.push_back(i);
+			}
+		}
 
 	private:
 		void _dump() const override
 		{
 			std::cout << "BlockAST {" << std::endl;
-			stmt->Dump();
+			for (auto &i : stmt)
+				i->Dump();
 			_printTabs(-1);
 			std::cout << "}" << std::endl;
 		}
@@ -184,6 +190,15 @@ namespace MC::ast::node
 		}
 	};
 
+	class ArrayDeclareInitValue : public Expression
+	{
+	public:
+		bool is_number;
+		std::unique_ptr<Expression> value;
+		std::vector<std::unique_ptr<ArrayDeclareInitValue>> value_list;
+		ArrayDeclareInitValue(bool is_number, Expression *value) : is_number(is_number), value(std::move(value)){};
+	};
+
 	class ReturnStatement : public Statement
 	{
 	public:
@@ -198,4 +213,54 @@ namespace MC::ast::node
 			std::cout << " }" << std::endl;
 		}
 	};
+
+	class DeclareStatement : public Statement
+	{
+	public:
+		int type;
+		std::vector<Declare *> list;
+		DeclareStatement(int type) : type(type){};
+
+	private:
+		// ~DeclareStatement() {}
+		void _dump() const override
+		{
+			std::cout << "DeclareStatement { ";
+			for (int i = 0; i < list.size(); i++)
+			{
+				list.at(i)->Dump();
+				if (i != list.size() - 1)
+					std::cout << ", ";
+			}
+			std::cout << " }" << std::endl;
+		}
+	};
+
+	class VarDeclare : public Declare
+	{
+	public:
+		std::unique_ptr<std::string> name;
+		VarDeclare(std::string *name) : name(std::move(name)){};
+
+	private:
+		void _dump() const override
+		{
+		}
+	};
+
+	class VarDeclareWithInit : public Declare
+	{
+	public:
+		std::unique_ptr<std::string> name;
+		std::unique_ptr<Expression> init_value;
+		bool is_const;
+		VarDeclareWithInit(std::string *name, Expression *init_value, bool is_const = false)
+			: name(std::move(name)), init_value(std::move(init_value)), is_const(is_const){};
+
+	private:
+		void _dump() const override
+		{
+		}
+	};
+
 }
