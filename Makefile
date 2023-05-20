@@ -5,8 +5,12 @@ run:
 	./mc -koopa ../test/hello.c -o hello.koopa; \
 	cd ../
 
-
-
+g:
+	cd build;  \
+	make;  \
+	clear;  \
+	./mc  \
+	cd ../  
 
 kp:
 	koopac hello.koopa | llc --filetype=obj -o hello.o

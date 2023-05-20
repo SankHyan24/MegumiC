@@ -35,6 +35,13 @@ Hexadecimal   0[xX][0-9a-fA-F]+
 "int"           { return INT; }/*Key words */
 "const"         { return CONST; }/*Key words */
 "return"        { return RETURN; }
+"function"      { return FUNCTION; }
+"while"         { return WHILE; }
+"if"            { return IF; }
+"else"          { return ELSE; }
+"break"         { return BREAK; }
+
+
 "<="            { return LE_OP; }
 ">="            { return GE_OP; }
 "=="            { return EQ_OP; }

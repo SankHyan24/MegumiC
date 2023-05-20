@@ -17,6 +17,11 @@ namespace MC::ast::node
 
     void CompUnitAST::_generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir)
     {
-        func_def->generate_ir(ctx, ir);
+        // func_def->generate_ir(ctx, ir);
+        for (auto &i : list)
+        {
+            i->generate_ir(ctx, ir);
+        }
     }
+
 }
