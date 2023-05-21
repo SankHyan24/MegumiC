@@ -41,12 +41,11 @@ namespace MC::IR
     {
     public:
         unsigned int id;
-        unsigned int get_id()
-        {
-            return ++id;
-        }
+        unsigned int get_id() { return ++id; }
 
         Context();
+
+    private:
     };
 
 }

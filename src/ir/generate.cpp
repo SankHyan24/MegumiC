@@ -6,7 +6,7 @@ namespace MC::IR
 {
     std::unique_ptr<IRList> generate(std::unique_ptr<MC::ast::node::BaseAST> &ast)
     {
-        Context ctx;
+        Context ctx; // the context
         IRList ir;
         ast->generate_ir(ctx, ir);
         return std::make_unique<IRList>(std::move(ir));

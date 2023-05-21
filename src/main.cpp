@@ -25,7 +25,7 @@ int main(int argc, const char *argv[])
 	ast->Dump();
 
 	// generate ir here
-	// auto ir = MC::IR::generate(ast);
+	auto ir = MC::IR::generate(ast);
 
 	return 0;
 }

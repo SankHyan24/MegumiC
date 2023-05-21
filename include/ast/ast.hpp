@@ -185,7 +185,6 @@ namespace MC::ast::node
 		}
 	};
 
-	// Function Call Arglist
 	class FunctionCallArgList : public Expression
 	{
 	public:
@@ -200,7 +199,7 @@ namespace MC::ast::node
 			std::cout << " }";
 		}
 	};
-	// Function Call
+
 	class FunctionCall : public Expression
 	{
 	public:
@@ -218,7 +217,6 @@ namespace MC::ast::node
 		}
 	};
 
-	// Assignment
 	class Assignment : public Statement
 	{
 	public:
@@ -237,7 +235,6 @@ namespace MC::ast::node
 	};
 	// AfterInc
 
-	// IfElseStatement
 	class IfElseStatement : public Statement
 	{
 	public:
@@ -258,7 +255,6 @@ namespace MC::ast::node
 			std::cout << " }";
 		}
 	};
-	// WhileStatement
 	class WhileStatement : public Statement
 	{
 	public:
@@ -276,8 +272,8 @@ namespace MC::ast::node
 			std::cout << " }";
 		}
 	};
-	// ForStatement
 	class BreakStatement : public Statement
+	// ForStatement
 	{
 	public:
 		BreakStatement() {}
