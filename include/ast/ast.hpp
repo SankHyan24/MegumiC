@@ -219,7 +219,7 @@ namespace MC::ast::node
 	};
 
 	// Assignment
-	class Assignment : public Expression
+	class Assignment : public Statement
 	{
 	public:
 		std::unique_ptr<Identifier> ident;

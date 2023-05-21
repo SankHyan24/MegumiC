@@ -86,8 +86,8 @@ using namespace std;
 %type <array_declare_init_value> InitValArray InitValArrayItems
 // arglist
 %type <block_val> Block BlockItems 
-%type <statement> Stmt BlockItem BreakStmt ReturnStmt WhileStmt  IfStmt
-/* %type <statement> AssignStmt AssignStmtWithoutSemi ForStmt ContinueStmt */
+%type <statement> Stmt BlockItem BreakStmt ReturnStmt WhileStmt  IfStmt AssignStmt Assignment
+/* %type <statement>  Assignment ForStmt ContinueStmt */
 %type <int_val> UnaryOp  
 %type <ast_val> FuncType
 
@@ -275,6 +275,7 @@ Stmt
 	| WhileStmt
 	| BreakStmt
 	| IfStmt
+	| AssignStmt
 
 ReturnStmt
 	: RETURN Exp SEMICOLON { $$ = new MC::ast::node::ReturnStatement(0); } ;
@@ -288,6 +289,10 @@ BreakStmt
 IfStmt
 	: IF '(' Exp ')' Stmt { $$ = new MC::ast::node::IfElseStatement($3, $5,new MC::ast::node::VoidStatement()); }
 	| IF '(' Exp ')' Stmt ELSE Stmt { $$ = new MC::ast::node::IfElseStatement($3, $5, $7); };
+AssignStmt
+	: Assignment SEMICOLON { $$ = $1; } ;
+Assignment
+	: LVal '=' Exp { $$ = new MC::ast::node::Assignment($1, $3); };
 
 //
 Exp 
