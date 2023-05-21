@@ -374,12 +374,12 @@ namespace MC::ast::node
 		}
 	};
 
-	// Array
 	class ArrayIdentifier : public Identifier
 	{
 	public:
 		std::vector<std::unique_ptr<Expression>> index_list;
 		ArrayIdentifier(std::string name) : Identifier(name){};
+		ArrayIdentifier(Identifier *ident) : Identifier(*ident){};
 
 	private:
 		void _dump() const override
@@ -395,6 +395,7 @@ namespace MC::ast::node
 			std::cout << " }";
 		}
 	};
+
 	class ArrayDeclareInitValue : public Expression
 	{
 	public:
@@ -402,10 +403,46 @@ namespace MC::ast::node
 		std::unique_ptr<Expression> value;
 		std::vector<std::unique_ptr<ArrayDeclareInitValue>> value_list;
 		ArrayDeclareInitValue(bool is_const, Expression *value) : is_const(is_const), value(std::move(value)){};
+		ArrayDeclareInitValue(bool is_const) : is_const(is_const){};
 
 	private:
 		void _dump() const override
 		{
+			if (value == nullptr)
+			{
+				std::cout << "{";
+				for (int i = 0; i < value_list.size(); i++)
+				{
+					value_list.at(i)->Dump();
+					if (i != value_list.size() - 1)
+						std::cout << ", ";
+				}
+				std::cout << "}";
+			}
+			else
+			{
+				value->Dump();
+			}
+		}
+	};
+
+	class ArrayDeclareWithInit : public Declare
+	{
+	public:
+		std::unique_ptr<ArrayIdentifier> name;
+		std::unique_ptr<Expression> init_value;
+		bool is_const;
+		ArrayDeclareWithInit(ArrayIdentifier *name, Expression *init_value, bool is_const = false)
+			: name(std::move(name)), init_value(std::move(init_value)), is_const(is_const){};
+
+	private:
+		void _dump() const override
+		{
+			std::cout << "ArrayDeclareWithInit { ";
+			name->Dump();
+			std::cout << "=";
+			init_value->Dump();
+			std::cout << " }" << std::endl;
 		}
 	};
 

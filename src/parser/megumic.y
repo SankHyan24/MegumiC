@@ -74,13 +74,16 @@ using namespace std;
 %type <binop>  MulOp RelOp AddOp EqOp
 %type <expression_val> Exp UnaryExp PrimaryExp MulExp AddExp RelExp EqExp LAndExp LOrExp Number FunctionCall
 %type <declare_stmt> Decl VarDecl ConstDecl  ConstDeclStmt VarDeclStmt  
-%type <declare> VarDef ConstDef
+%type <declare> VarDef ConstDef VarDefOne VarDefArray
 // array
+%type <array_identifier> DefArrayName
+
 %type <function_def> FuncDef
 %type <function_define_arg_list> FuncParams
 %type <function_define_arg> FuncParam FuncParamArray FuncParamOne
 %type <function_call_arg_list> FuncRParams
 // arrayinit
+%type <array_declare_init_value> InitValArray InitValArrayItems
 // arglist
 %type <block_val> Block BlockItems 
 %type <statement> Stmt BlockItem BreakStmt ReturnStmt WhileStmt  IfStmt
@@ -98,17 +101,14 @@ CompUnit
 	: CompUnit Decl { 
 		((MC::ast::node::CompUnitAST*)(ast.get()))->list.push_back(std::unique_ptr<MC::ast::node::DeclareStatement>());
 		((MC::ast::node::CompUnitAST*)(ast.get()))->list.back().reset($2);
-	}
-	| CompUnit FuncDef { 
+	}	| CompUnit FuncDef { 
 		((MC::ast::node::CompUnitAST*)(ast.get()))->list.push_back(std::unique_ptr<MC::ast::node::FunctionDefine>());
 		((MC::ast::node::CompUnitAST*)(ast.get()))->list.back().reset($<function_def>2);
-	}
-	| Decl { 
+	}	| Decl { 
 		ast = move(make_unique<MC::ast::node::CompUnitAST>());
 		((MC::ast::node::CompUnitAST*)(ast.get()))->list.push_back(std::unique_ptr<MC::ast::node::DeclareStatement>());
 		((MC::ast::node::CompUnitAST*)(ast.get()))->list.back().reset($1);
-	}
-	| FuncDef { 
+	}	| FuncDef { 
 		ast = move(make_unique<MC::ast::node::CompUnitAST>());
 		((MC::ast::node::CompUnitAST*)(ast.get()))->list.push_back(std::unique_ptr<MC::ast::node::FunctionDefine>());
 		((MC::ast::node::CompUnitAST*)(ast.get()))->list.back().reset($<function_def>1);
@@ -220,10 +220,51 @@ VarDecl
 	};
 
 VarDef
-	: ident { $$ =  new MC::ast::node::VarDeclare($1);}
-	| ident '=' Exp {$$ = new MC::ast::node::VarDeclareWithInit($1, $3, true); };
+	: VarDefOne
+	| VarDefArray
+	;
 
+VarDefOne
+	: ident '=' Exp {$$ = new MC::ast::node::VarDeclareWithInit($1, $3, true); }
+	| ident { $$ =  new MC::ast::node::VarDeclare($1);};
 
+VarDefArray
+	: DefArrayName '=' InitValArray { $$ = new MC::ast::node::ArrayDeclareWithInit($1,$3);}
+	| DefArrayName { $$ = new MC::ast::node::ArrayDeclare($1); }
+
+InitValArray
+	: '{' InitValArrayItems '}' { $$ = $2; }
+	| '{' '}' { $$ = new MC::ast::node::ArrayDeclareInitValue(false, nullptr);};// ?
+
+InitValArrayItems
+	: InitValArrayItems COMMA InitValArray { $$ = $1;
+		$$->value_list.push_back(std::unique_ptr<MC::ast::node::ArrayDeclareInitValue>());
+		$$->value_list.back().reset($3);
+	}
+	| InitValArrayItems COMMA AddExp { $$ = $1;
+		$$->value_list.push_back(std::unique_ptr<MC::ast::node::ArrayDeclareInitValue>());
+		auto tmp = new MC::ast::node::ArrayDeclareInitValue(true, $3);
+		$$->value_list.back().reset(tmp);//
+	}
+	| InitValArray { $$ = new MC::ast::node::ArrayDeclareInitValue(true, nullptr);
+		$$->value_list.push_back(std::unique_ptr<MC::ast::node::ArrayDeclareInitValue>());
+		$$->value_list.back().reset($1);
+	}
+	| AddExp { $$ = new MC::ast::node::ArrayDeclareInitValue(true, nullptr);
+		$$->value_list.push_back(std::unique_ptr<MC::ast::node::ArrayDeclareInitValue>());
+		auto tmp = new MC::ast::node::ArrayDeclareInitValue(true, $1);
+		$$->value_list.back().reset(tmp);// 
+	};
+
+DefArrayName
+	: DefArrayName '[' AddExp ']' { $$ = $1;
+		$$->index_list.push_back(std::unique_ptr<MC::ast::node::Expression>());
+		$$->index_list.back().reset($3);
+	}
+	| ident '[' AddExp ']' { $$ = new MC::ast::node::ArrayIdentifier($1);
+		$$->index_list.push_back(std::unique_ptr<MC::ast::node::Expression>());
+		$$->index_list.back().reset($3);
+	};
 
 BType
 	: INT ;
