@@ -190,6 +190,7 @@ namespace MC::ast::node
 		ConditionExpression(Expression *ExpressionValue) : ExpressionValue(std::move(ExpressionValue)) {}
 
 	private:
+		virtual void _generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir) override;
 		void _dump() const override
 		{
 			std::cout << "ConditionExpression { ";

@@ -113,11 +113,18 @@ namespace MC::ast::node
 
     void UnaryExpression::_generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir)
     {
+        this->rhs->generate_ir(ctx, ir);
+
         std::string name = "%" + std::to_string(ctx.get_id());
         this->id = ctx.get_last_id();
 
-        this->rhs->generate_ir(ctx, ir);
         ir.push_back(std::unique_ptr<MC::IR::IRAssignBinOp>());
         ir.back().reset(new MC::IR::IRAssignUnaryOp(name, this->rhs->get_name(), this->op));
+    }
+
+    void ConditionExpression::_generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir)
+    {
+        this->ExpressionValue->generate_ir(ctx, ir);
+        this->id = this->ExpressionValue->id;
     }
 }
