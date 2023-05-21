@@ -95,4 +95,16 @@ namespace MC::IR
     {
         dst = Var + " = " + (op == MC::IR::BinOp::ADD ? "" : BinOp2String(op)) + +" " + RHS;
     }
+
+    void IRCall::_generate()
+    {
+        dst = Var + " = call " + FuncName + "(";
+        for (auto &i : Args)
+        {
+            dst += i;
+            if (&i != &Args.back())
+                dst += ", ";
+        }
+        dst += ")";
+    }
 }

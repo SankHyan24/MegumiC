@@ -28,10 +28,10 @@ namespace MC::IR
 
     enum class IROp
     {
-        FuncDef,    // fun @half(@x: i32): i32 { done
-        FuncDefEnd, // done
-        Label,      // %entry:
-        AssignFunc,
+        FuncDef,       // fun @half(@x: i32): i32 { done
+        FuncDefEnd,    // done
+        Label,         // %entry:
+        Call,          // done
         AssignBinOp,   // done
         AssignUnaryOp, // done
         AssignImm,     // done
@@ -150,6 +150,18 @@ namespace MC::IR
         std::string RHS;
         BinOp op;
         IRAssignUnaryOp(std::string Var, std::string RHS, BinOp op) : Var(Var), RHS(RHS), op(op) {}
+
+    private:
+        virtual void _generate() override;
+    };
+
+    class IRCall : public IRcode
+    {
+    public:
+        std::string Var;
+        std::string FuncName;
+        std::vector<std::string> Args;
+        IRCall(std::string Var, std::string FuncName, std::vector<std::string> Args) : Var(Var), Args(Args), FuncName(FuncName) {}
 
     private:
         virtual void _generate() override;

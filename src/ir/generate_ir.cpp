@@ -32,7 +32,7 @@ namespace MC::ast::node
     }
 
     void VarDeclare::_generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir)
-    {
+    { // TODO:
     }
 
     void BlockAST::_generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir)
@@ -89,6 +89,11 @@ namespace MC::ast::node
         ir.back().reset(new MC::IR::IRRet(return_name));
     }
 
+    void EvaluateStatement::_generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir)
+    {
+        this->value->generate_ir(ctx, ir);
+    }
+
     void NumberAST::_generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir)
     {
         std::string name = "%" + std::to_string(ctx.get_id());
@@ -126,5 +131,24 @@ namespace MC::ast::node
     {
         this->ExpressionValue->generate_ir(ctx, ir);
         this->id = this->ExpressionValue->id;
+    }
+
+    void FunctionCall::_generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir)
+    {
+        std::string funcName = "@" + this->functionName->name;
+        // auto arg_list = this->arg_list->arg_list;
+        std::vector<std::string> args;
+
+        for (auto &i : this->arg_list->arg_list)
+        {
+            i->generate_ir(ctx, ir);
+            args.push_back(i->get_name());
+        }
+
+        std::string this_name = "%" + std::to_string(ctx.get_id());
+        this->id = ctx.get_last_id();
+
+        ir.push_back(std::unique_ptr<MC::IR::IRCall>());
+        ir.back().reset(new MC::IR::IRCall(this_name, funcName, args));
     }
 }

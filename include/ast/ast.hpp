@@ -222,6 +222,7 @@ namespace MC::ast::node
 		FunctionCall(Identifier *functionName, FunctionCallArgList *arg_list) : functionName(std::move(functionName)), arg_list(std::move(arg_list)) {}
 
 	private:
+		virtual void _generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir) override;
 		void _dump() const override
 		{
 			std::cout << "FunctionCall { ";
@@ -306,6 +307,7 @@ namespace MC::ast::node
 		EvaluateStatement(Expression *value) : value(std::move(value)) {}
 
 	private:
+		virtual void _generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir) override;
 		void _dump() const override
 		{
 			std::cout << "EvaluateStatement { ";
