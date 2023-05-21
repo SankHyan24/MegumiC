@@ -289,7 +289,20 @@ namespace MC::ast::node
 		}
 	};
 	// ContinueStatement
-	// EvaluateStatement  直接一个表达式;
+	class EvaluateStatement : public Statement
+	{
+	public:
+		std::unique_ptr<Expression> value;
+		EvaluateStatement(Expression *value) : value(std::move(value)) {}
+
+	private:
+		void _dump() const override
+		{
+			std::cout << "EvaluateStatement { ";
+			value->Dump();
+			std::cout << " }";
+		}
+	};
 
 	class ReturnStatement : public Statement
 	{

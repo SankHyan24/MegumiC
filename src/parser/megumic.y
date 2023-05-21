@@ -87,7 +87,7 @@ using namespace std;
 // arglist
 %type <block_val> Block BlockItems 
 %type <statement> Stmt BlockItem BreakStmt ReturnStmt WhileStmt  IfStmt AssignStmt Assignment
-/* %type <statement>  Assignment ForStmt ContinueStmt */
+/* %type <statement> ForStmt ContinueStmt */
 %type <int_val> UnaryOp  
 %type <ast_val> FuncType
 
@@ -276,6 +276,7 @@ Stmt
 	| BreakStmt
 	| IfStmt
 	| AssignStmt
+	| Exp SEMICOLON { $$ = new  MC::ast::node::EvaluateStatement($1); }
 
 ReturnStmt
 	: RETURN Exp SEMICOLON { $$ = new MC::ast::node::ReturnStatement(0); } ;
