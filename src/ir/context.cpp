@@ -72,4 +72,9 @@ namespace MC::IR
         const_table.pop_back();
         const_assign_table.pop_back();
     }
+
+    bool Context::is_global()
+    {
+        return symbol_table.size() == 1 && const_table.size() == 1;
+    }
 }

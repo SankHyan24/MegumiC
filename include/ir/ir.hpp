@@ -42,7 +42,8 @@ namespace MC::IR
         ArrayDef,
         Store,
         Load,
-        Ret, // done
+        Alloc, // todo
+        Ret,   // done
         FunctionCall,
         GlobalVar,
         GlobalArray
@@ -166,6 +167,15 @@ namespace MC::IR
     private:
         virtual void _generate() override;
     };
+    class IRAlloc : public IRcode
+    {
+    public:
+        std::string Var;
+        VarType AllocType;
+        IRAlloc(std::string Var, VarType AllocType) : Var(Var), AllocType(AllocType) {}
 
+    private:
+        virtual void _generate() override;
+    };
     using IRList = std::list<std::unique_ptr<IRcode>>;
 }

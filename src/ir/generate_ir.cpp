@@ -27,12 +27,29 @@ namespace MC::ast::node
     {
         for (auto &i : list)
         {
+            if (this->type == 0)
+                i->type = MC::IR::VarType::Val;
+            else
+                i->type = MC::IR::VarType::Ptr;
             i->generate_ir(ctx, ir);
         }
     }
 
     void VarDeclare::_generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir)
-    { // TODO:
+    {
+        if (ctx.is_global()) // TODO:
+        {
+            std::string ir_name = "@" + this->name->name;
+            // ir.push_back
+            ctx.insert_symbol(this->name->name, VarInfo(ir_name));
+        }
+        else
+        {
+            std::string ir_name = "%" + std::to_string(ctx.get_id());
+            ir.push_back(std::unique_ptr<MC::IR::IRAlloc>());
+            ir.back().reset(new MC::IR::IRAlloc(ir_name, this->type));
+            ctx.insert_symbol(this->name->name, VarInfo(ir_name));
+        }
     }
 
     void BlockAST::_generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir)
@@ -56,7 +73,7 @@ namespace MC::ast::node
             if (arg_identifier)
             {
                 std::vector<int> shape;
-                // TODO: add shape
+                // TODO: add shape( no need because the ir cannot recongnize it)
                 std::string arg_name = "%" + std::to_string(ctx.get_id());
                 ctx.insert_symbol(i.get()->name.get()->name, MC::IR::VarInfo(arg_name));
                 args.push_back({MC::IR::VarType::Ptr, arg_name});
@@ -71,7 +88,6 @@ namespace MC::ast::node
         ir.push_back(std::unique_ptr<MC::IR::IRFuncDef>());
         ir.back().reset(new MC::IR::IRFuncDef(functionName, retType, args));
 
-        // TODO:
         this->block->generate_ir(ctx, ir);
 
         ir.push_back(std::unique_ptr<MC::IR::IRFuncDefEnd>());
@@ -92,6 +108,11 @@ namespace MC::ast::node
     void EvaluateStatement::_generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir)
     {
         this->value->generate_ir(ctx, ir);
+    }
+
+    void IfElseStatement::_generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir)
+    {
+        // TODO:
     }
 
     void NumberAST::_generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir)
@@ -136,7 +157,6 @@ namespace MC::ast::node
     void FunctionCall::_generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir)
     {
         std::string funcName = "@" + this->functionName->name;
-        // auto arg_list = this->arg_list->arg_list;
         std::vector<std::string> args;
 
         for (auto &i : this->arg_list->arg_list)

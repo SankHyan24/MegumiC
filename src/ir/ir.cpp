@@ -107,4 +107,9 @@ namespace MC::IR
         }
         dst += ")";
     }
+
+    void IRAlloc::_generate()
+    {
+        dst = Var + " = alloc " + getVarTypeStr(AllocType);
+    }
 }

@@ -71,6 +71,8 @@ namespace MC::ast::node
 
 	class Declare : public BaseAST
 	{
+	public:
+		MC::IR::VarType type;
 	};
 
 	class CompUnitAST : public BaseAST
@@ -91,7 +93,7 @@ namespace MC::ast::node
 		}
 	};
 
-	class FuncTypeAST : public BaseAST
+	class FuncTypeAST : public BaseAST // todo ::delete
 	{
 	public:
 		std::unique_ptr<std::string> type_name;
@@ -259,6 +261,7 @@ namespace MC::ast::node
 		IfElseStatement(Expression *condition, Statement *if_statement, Statement *else_statement) : condition(std::move(condition)), if_statement(std::move(if_statement)), else_statement(std::move(else_statement)) {}
 
 	private:
+		virtual void _generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir) override;
 		void _dump() const override
 		{
 			std::cout << "IfElseStatement { if(";
@@ -336,7 +339,7 @@ namespace MC::ast::node
 	class DeclareStatement : public Statement
 	{
 	public:
-		int type;
+		int type{0};
 		std::vector<std::unique_ptr<Declare>> list;
 		DeclareStatement(int type) : type(type){};
 

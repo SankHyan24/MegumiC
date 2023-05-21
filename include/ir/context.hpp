@@ -64,7 +64,6 @@ namespace MC::IR
         void end_scope();
 
         bool is_global();
-        bool in_loop();
 
     private:
     };
