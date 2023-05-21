@@ -279,7 +279,7 @@ Stmt
 	| Exp SEMICOLON { $$ = new  MC::ast::node::EvaluateStatement($1); }
 
 ReturnStmt
-	: RETURN Exp SEMICOLON { $$ = new MC::ast::node::ReturnStatement(0); } ;
+	: RETURN Exp SEMICOLON { $$ = new MC::ast::node::ReturnStatement($2); } ;
 
 WhileStmt
 	: WHILE '(' Exp ')' Stmt { $$ = new MC::ast::node::WhileStatement($3, $5); } ;

@@ -4,6 +4,7 @@
  */
 #include <vector>
 #include <string>
+#include <unordered_map>
 
 namespace MC::IR
 {
@@ -40,10 +41,30 @@ namespace MC::IR
     class Context
     {
     public:
-        unsigned int id;
-        unsigned int get_id() { return ++id; }
-
         Context();
+        int id;
+        int get_id() { return ++id; }
+        int get_last_id() { return id; }
+        using SymbolTable = std::vector<std::unordered_map<std::string, VarInfo>>;
+        using ConstTable = std::vector<std::unordered_map<std::string, ConstInfo>>;
+
+        SymbolTable symbol_table = {{}};
+        ConstTable const_table = {{}};
+        ConstTable const_assign_table = {{}};
+
+        void insert_symbol(std::string name, VarInfo value);
+        void insert_const(std::string name, ConstInfo value);
+        void insert_const_assign(std::string name, ConstInfo value);
+
+        VarInfo &find_symbol(std::string name);
+        ConstInfo &find_const(std::string name);
+        ConstInfo &find_const_assign(std::string name);
+
+        void create_scope();
+        void end_scope();
+
+        bool is_global();
+        bool in_loop();
 
     private:
     };

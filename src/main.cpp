@@ -26,6 +26,9 @@ int main(int argc, const char *argv[])
 
 	// generate ir here
 	auto ir = MC::IR::generate(ast);
+	for (auto &i : *ir)
+		i->DumpIR();
+	std::cout << "done" << std::endl;
 
 	return 0;
 }

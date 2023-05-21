@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <memory>
+#include <cassert>
 
 #include <ir/ir.hpp>
 #include <ir/context.hpp>
@@ -11,11 +12,16 @@ namespace MC::ast::node
 	class BaseAST
 	{
 	public:
+		int id;
 		static int rec_depth;
 		virtual ~BaseAST() = default;
 
 		virtual void Dump(); // Dump the AST
 		void generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir);
+		std::string get_name()
+		{
+			return "%" + std::to_string(id);
+		}
 
 	protected:
 		static void _printTabs(int j = 0) // This function only used in dump
@@ -103,15 +109,9 @@ namespace MC::ast::node
 	public:
 		std::vector<std::unique_ptr<Statement>> stmt;
 		BlockAST() {}
-		// BlockAST(const BlockAST &c)
-		// {
-		// 	for (auto &i : c.stmt)
-		// 	{
-		// 		this->stmt.push_back(i);
-		// 	}
-		// }
 
 	private:
+		virtual void _generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir) override;
 		void _dump() const override
 		{
 			std::cout << "BlockAST {" << std::endl;
@@ -130,6 +130,7 @@ namespace MC::ast::node
 		NumberAST(const std::string &value) : number(std::stoi(value, 0, 0)) {}
 
 	private:
+		virtual void _generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir) override;
 		void _dump() const override
 		{
 			std::cout << number;
@@ -144,6 +145,7 @@ namespace MC::ast::node
 		BinaryExpression(Expression *lhs, MC::IR::BinOp op, Expression *rhs) : op(op), lhs(std::move(lhs)), rhs(std::move(rhs)) {}
 
 	private:
+		virtual void _generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir) override;
 		void _dump() const override
 		{
 			std::cout << " binE( ";
@@ -157,11 +159,22 @@ namespace MC::ast::node
 	class UnaryExpression : public Expression
 	{
 	public:
-		char op;
+		MC::IR::BinOp op;
 		std::unique_ptr<Expression> rhs;
-		UnaryExpression(int op, Expression *rhs) : op(op), rhs(std::move(rhs)) {}
+		UnaryExpression(char op_, Expression *rhs) : rhs(std::move(rhs))
+		{
+			if (op_ == '+')
+				op = MC::IR::BinOp::ADD;
+			else if (op_ == '-')
+				op = MC::IR::BinOp::SUB;
+			else if (op_ == '!')
+				op = MC::IR::BinOp::NOT;
+			else
+				assert(false);
+		}
 
 	private:
+		virtual void _generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir) override;
 		void _dump() const override
 		{
 			std::cout << "UnaE" << this->op << "{ ";
@@ -305,9 +318,10 @@ namespace MC::ast::node
 	public:
 		std::unique_ptr<Expression> exp;
 		ReturnStatement(Expression *exp) : exp(std::move(exp)) {}
-		ReturnStatement(int number) : exp(std::move(new NumberAST(number))) {}
+		// ReturnStatement(int number) : exp(std::move(new NumberAST(number))) {}
 
 	private:
+		virtual void _generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir) override;
 		void _dump() const override
 		{
 			std::cout << "ReturnStatement { ";
@@ -324,6 +338,7 @@ namespace MC::ast::node
 		DeclareStatement(int type) : type(type){};
 
 	private:
+		virtual void _generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir) override;
 		void _dump() const override
 		{
 			std::cout << "DeclareStatement { ";
@@ -355,6 +370,7 @@ namespace MC::ast::node
 		VarDeclare(Identifier *name) : name(std::move(name)){};
 
 	private:
+		virtual void _generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir) override;
 		void _dump() const override
 		{
 			std::cout << "VarDeclare { ";
@@ -512,6 +528,7 @@ namespace MC::ast::node
 		FunctionDefine(BaseAST *return_type, Identifier *name, FunctionDefineArgList *arg_list, BlockAST *block) : func_type(return_type), name(std::move(name)), arg_list(std::move(arg_list)), block(std::move(block)) {}
 
 	private:
+		virtual void _generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir) override;
 		void _dump() const override
 		{
 			std::cout << "FunctionDefine { ";

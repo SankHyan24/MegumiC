@@ -23,7 +23,7 @@ void BaseAST::generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir)
     nodes.push(this);
     try
     {
-        // this->_generate_ir(ctx, ir);
+        this->_generate_ir(ctx, ir);
         nodes.pop();
     }
     catch (...)

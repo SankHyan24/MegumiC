@@ -11,4 +11,5 @@ namespace MC::IR
         ast->generate_ir(ctx, ir);
         return std::make_unique<IRList>(std::move(ir));
     }
+
 }
