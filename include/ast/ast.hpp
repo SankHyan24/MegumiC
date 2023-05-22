@@ -96,13 +96,13 @@ namespace MC::ast::node
 	class FuncTypeAST : public BaseAST // todo ::delete
 	{
 	public:
-		std::unique_ptr<std::string> type_name;
-		FuncTypeAST(std::string *arg) : type_name(std::move(arg)) {}
+		MC::IR::VarType type;
+		FuncTypeAST(MC::IR::VarType type) : type(type) {}
 
 	private:
 		void _dump() const override
 		{
-			std::cout << "FuncTypeAST {" << *type_name << "}" << std::endl;
+			std::cout << "FuncTypeAST { " << (type == MC::IR::VarType::Ptr ? "Ptr" : "Var") << " }" << std::endl;
 		}
 	};
 
@@ -357,9 +357,9 @@ namespace MC::ast::node
 	class DeclareStatement : public Statement
 	{
 	public:
-		int type{0};
+		std::unique_ptr<FuncTypeAST> type;
 		std::vector<std::unique_ptr<Declare>> list;
-		DeclareStatement(int type) : type(type){};
+		DeclareStatement(FuncTypeAST *type) : type(type){};
 
 	private:
 		virtual void _generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir) override;
@@ -511,9 +511,9 @@ namespace MC::ast::node
 	class FunctionDefineArg : public Expression
 	{
 	public:
-		int type; // TODO
+		std::unique_ptr<FuncTypeAST> type;
 		std::unique_ptr<Identifier> name;
-		FunctionDefineArg(int type, Identifier *name) : type(type), name(std::move(name)) {}
+		FunctionDefineArg(FuncTypeAST *type, Identifier *name) : type(type), name(std::move(name)) {}
 
 	private:
 		void _dump() const override
@@ -546,11 +546,11 @@ namespace MC::ast::node
 	class FunctionDefine : public BaseAST
 	{
 	public:
-		std::unique_ptr<BaseAST> func_type;
+		std::unique_ptr<FuncTypeAST> func_type;
 		std::unique_ptr<Identifier> name;
 		std::unique_ptr<FunctionDefineArgList> arg_list;
 		std::unique_ptr<BlockAST> block;
-		FunctionDefine(BaseAST *return_type, Identifier *name, FunctionDefineArgList *arg_list, BlockAST *block) : func_type(return_type), name(std::move(name)), arg_list(std::move(arg_list)), block(std::move(block)) {}
+		FunctionDefine(FuncTypeAST *return_type, Identifier *name, FunctionDefineArgList *arg_list, BlockAST *block) : func_type(return_type), name(std::move(name)), arg_list(std::move(arg_list)), block(std::move(block)) {}
 
 	private:
 		virtual void _generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir) override;

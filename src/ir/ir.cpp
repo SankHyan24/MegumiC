@@ -21,8 +21,8 @@ namespace
 
     // mapping from VarType
     char varTypeStr[2][5] = {
-        "i32",
-        "*i32"};
+        "*i32",
+        "i32"};
 
     std::string getVarTypeStr(MC::IR::VarType type)
     {

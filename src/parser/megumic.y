@@ -46,6 +46,7 @@ using namespace std;
 	MC::ast::node::ArrayDeclare *array_delcare;
 	MC::ast::node::ArrayIdentifier *array_identifier;
 
+	MC::ast::node::FuncTypeAST *func_type;
 	MC::ast::node::FunctionCallArgList *function_call_arg_list;
 	MC::ast::node::FunctionDefineArgList *function_define_arg_list;
 	MC::ast::node::FunctionDefineArg *function_define_arg;
@@ -62,14 +63,13 @@ using namespace std;
 
 // lexer 返回的所有 token 种类的声明
 // 注意 IDENT 和 INT_CONST 会返回 token 的值, 分别对应 str_val 和 int_val
-%token <token> INT RETURN CONST SEMICOLON COMMA FUNCTION WHILE IF ELSE BREAK CONTINUE
+%token <token> INT PTR RETURN CONST SEMICOLON COMMA FUNCTION WHILE IF ELSE BREAK CONTINUE
 %token <str_val>  AND_OP OR_OP IDENT
 %token <int_val> INT_CONST 
 %token <binop> LE_OP GE_OP EQ_OP NE_OP
 /* %left LE_OP GE_OP EQ_OP NE_OP */
 /* %type <str_val>  */
 
-%type <token> BType 
 %type <ident> ident LVal
 %type <binop>  MulOp RelOp AddOp EqOp
 %type <expression_val> Exp UnaryExp PrimaryExp MulExp AddExp RelExp EqExp LAndExp LOrExp Number FunctionCall
@@ -89,7 +89,7 @@ using namespace std;
 %type <statement> Stmt BlockItem BreakStmt ReturnStmt WhileStmt  IfStmt AssignStmt Assignment ContinueStmt
 /* %type <statement> ForStmt ContinueStmt */
 %type <int_val> UnaryOp  
-%type <ast_val> FuncType
+%type <func_type> FuncType BType 
 
 %type <root> CompUnit
 //
@@ -142,11 +142,12 @@ FuncParamArray
 		((MC::ast::node::ArrayIdentifier*)($$->name.get()))->index_list.back().reset($3);
 	}
 	| FuncParamOne {
-		$$ = new MC::ast::node::FunctionDefineArg($1->type, new MC::ast::node::ArrayIdentifier($1->name->name));
+		$$ = new MC::ast::node::FunctionDefineArg($1->type.get(), new MC::ast::node::ArrayIdentifier($1->name->name));
 	}
 
 FuncType
-	: INT { $$ = new MC::ast::node::FuncTypeAST(new string("int")); } ;
+	: INT { $$ = new MC::ast::node::FuncTypeAST(MC::IR::VarType::Val); } ;
+	| PTR { $$ = new MC::ast::node::FuncTypeAST(MC::IR::VarType::Ptr); } ;
 
 
 
@@ -267,7 +268,7 @@ DefArrayName
 	};
 
 BType
-	: INT ;
+	: FuncType;
 
 Stmt
 	: Block

@@ -49,10 +49,7 @@ namespace MC::ast::node
     {
         for (auto &i : list)
         {
-            if (this->type == 0)
-                i->type = MC::IR::VarType::Val;
-            else
-                i->type = MC::IR::VarType::Ptr;
+            i->type = this->type->type;
             i->generate_ir(ctx, ir);
         }
     }
@@ -112,7 +109,8 @@ namespace MC::ast::node
         ctx.create_scope();
         // Function define
         std::string functionName = "@" + this->name->name;
-        VarType retType = MC::IR::VarType::Val;
+
+        VarType retType = this->func_type->type;
         std::vector<MC::IR::ArgPair> args;
         for (auto &i : this->arg_list->list)
         {
