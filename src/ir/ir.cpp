@@ -73,7 +73,7 @@ namespace MC::IR
 
     void IRLabel::_generate()
     {
-        dst = labelName;
+        dst = labelName + ":";
     }
 
     void IRRet::_generate()

@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
+#include <stack>
 
 namespace MC::IR
 {
@@ -51,6 +52,7 @@ namespace MC::IR
         SymbolTable symbol_table = {{}};
         ConstTable const_table = {{}};
         ConstTable const_assign_table = {{}};
+        std::stack<std::string> loop_label; // push while_start and while_end
 
         void insert_symbol(std::string name, VarInfo value);
         void insert_const(std::string name, ConstInfo value);
@@ -62,6 +64,10 @@ namespace MC::IR
 
         void create_scope();
         void end_scope();
+
+        void add_loop_label(std::string label);
+        void pop_loop_label();
+        std::string get_loop_label();
 
         bool is_global();
 

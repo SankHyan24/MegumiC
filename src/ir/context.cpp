@@ -73,8 +73,28 @@ namespace MC::IR
         const_assign_table.pop_back();
     }
 
+    void Context::add_loop_label(std::string label)
+    {
+        loop_label.push(label);
+    }
+
+    void Context::pop_loop_label()
+    {
+        if (loop_label.empty())
+            throw std::runtime_error("loop_label stack is empty");
+        loop_label.pop();
+    }
+
+    std::string Context::get_loop_label()
+    {
+        if (loop_label.empty())
+            throw std::runtime_error("loop_label stack is empty");
+        return loop_label.top();
+    }
+
     bool Context::is_global()
     {
         return symbol_table.size() == 1 && const_table.size() == 1;
     }
+
 }

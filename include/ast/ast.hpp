@@ -274,6 +274,7 @@ namespace MC::ast::node
 			std::cout << " }";
 		}
 	};
+
 	class WhileStatement : public Statement
 	{
 	public:
@@ -282,6 +283,7 @@ namespace MC::ast::node
 		WhileStatement(Expression *condition, Statement *stmt) : condition(std::move(condition)), stmt(std::move(stmt)) {}
 
 	private:
+		virtual void _generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir) override;
 		void _dump() const override
 		{
 			std::cout << "WhileStatement { condition(";
@@ -291,6 +293,7 @@ namespace MC::ast::node
 			std::cout << " }";
 		}
 	};
+
 	class BreakStatement : public Statement
 	// ForStatement
 	{
@@ -298,12 +301,26 @@ namespace MC::ast::node
 		BreakStatement() {}
 
 	private:
+		virtual void _generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir) override;
 		void _dump() const override
 		{
 			std::cout << "BreakStatement { }";
 		}
 	};
-	// ContinueStatement
+
+	class ContinueStatement : public Statement
+	{
+	public:
+		ContinueStatement() {}
+
+	private:
+		virtual void _generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir) override;
+		void _dump() const override
+		{
+			std::cout << "BreakStatement { }";
+		}
+	};
+
 	class EvaluateStatement : public Statement
 	{
 	public:

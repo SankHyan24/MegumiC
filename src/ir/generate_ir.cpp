@@ -37,12 +37,11 @@ namespace MC::ast::node
             std::string ir_name = varinfo.name;
 
             this->exp->generate_ir(ctx, ir);
-            std::string name = "%" + std::to_string(ctx.get_id());
-            this->id = ctx.get_last_id();
-            // change the varinfo
-            varinfo.name = this->get_name();
-            ir.push_back(std::unique_ptr<IRAssignUnaryOp>());
-            ir.back().reset(new MC::IR::IRAssignUnaryOp(varinfo.name, this->exp->get_name(), MC::IR::BinOp::ADD));
+            std::string exp_name = this->exp->get_name();
+
+            // store here
+            ir.push_back(std::unique_ptr<MC::IR::IRStore>());
+            ir.back().reset(new MC::IR::IRStore(exp_name, ir_name));
         }
     }
 
@@ -77,8 +76,8 @@ namespace MC::ast::node
 
     void VarDeclareWithInit::_generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir)
     {
-        if (ctx.is_global()) // TODO:
-        {
+        if (ctx.is_global())
+        { // TODO:
             std::string ir_name = "@" + this->name->name;
             // ir.push_back
             ctx.insert_symbol(this->name->name, VarInfo(ir_name));
@@ -88,8 +87,15 @@ namespace MC::ast::node
             std::string ir_name = "%" + std::to_string(ctx.get_id()); //?
             ctx.insert_symbol(this->name->name, VarInfo(ir_name));
 
-            Assignment assign(this->name.get(), this->init_value.get());
+            // alloc here:
+            ir.push_back(std::unique_ptr<MC::IR::IRAlloc>());
+            ir.back().reset(new MC::IR::IRAlloc(ir_name, this->type));
+
+            Assignment assign(this->name.release(), this->init_value.release());
             assign.generate_ir(ctx, ir);
+
+            this->name.reset(assign.ident.release());
+            this->init_value.reset(assign.exp.release());
         }
     }
 
@@ -153,7 +159,88 @@ namespace MC::ast::node
 
     void IfElseStatement::_generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir)
     {
-        // TODO:
+        int if_else_id = ctx.get_id();
+        std::string if_label = "%mc_then" + std::to_string(if_else_id);
+        std::string else_label = "%mc_else" + std::to_string(if_else_id);
+        std::string ifelse_end = "%mc_ifelse_end" + std::to_string(if_else_id);
+
+        // TODO eval condition here (not implemented)
+        this->condition->generate_ir(ctx, ir);
+        std::string condition_name = this->condition->get_name();
+        // br
+        ir.push_back(std::unique_ptr<MC::IR::IRBranch>());
+        ir.back().reset(new MC::IR::IRBranch(condition_name, if_label, else_label));
+        // ifthen block
+        ir.push_back(std::unique_ptr<MC::IR::IRLabel>());
+        ir.back().reset(new MC::IR::IRLabel(if_label));
+        this->if_statement->generate_ir(ctx, ir);
+        ir.push_back(std::unique_ptr<MC::IR::IRJump>());
+        ir.back().reset(new MC::IR::IRJump(ifelse_end));
+        // else block
+        ir.push_back(std::unique_ptr<MC::IR::IRLabel>());
+        ir.back().reset(new MC::IR::IRLabel(else_label));
+        this->else_statement->generate_ir(ctx, ir);
+        ir.push_back(std::unique_ptr<MC::IR::IRLabel>());
+        ir.back().reset(new MC::IR::IRLabel(ifelse_end));
+    }
+
+    void WhileStatement::_generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir)
+    {
+        // while_start:
+        //    condition
+        //    br condition while_loop_body while_end
+        // while_loop_body:
+        //    ...
+        //    jump while_start
+        // while_end:
+
+        int while_id = ctx.get_id();
+        std::string while_start = "%mc_while_start" + std::to_string(while_id);
+        std::string while_loop_body = "%mc_while_body" + std::to_string(while_id);
+        std::string while_end = "%mc_while_end" + std::to_string(while_id);
+
+        ctx.add_loop_label(while_start);
+        ctx.add_loop_label(while_end);
+
+        // label
+        ir.push_back(std::unique_ptr<MC::IR::IRLabel>());
+        ir.back().reset(new MC::IR::IRLabel(while_start));
+        // condition
+        this->condition->generate_ir(ctx, ir);
+        std::string condition_name = this->condition->get_name();
+        // br
+        ir.push_back(std::unique_ptr<MC::IR::IRBranch>());
+        ir.back().reset(new MC::IR::IRBranch(condition_name, while_loop_body, while_end));
+        // while_loop_body
+        ir.push_back(std::unique_ptr<MC::IR::IRLabel>());
+        ir.back().reset(new MC::IR::IRLabel(while_loop_body));
+        this->stmt->generate_ir(ctx, ir);
+        // jump
+        ir.push_back(std::unique_ptr<MC::IR::IRJump>());
+        ir.back().reset(new MC::IR::IRJump(while_start));
+        // while_end
+        ir.push_back(std::unique_ptr<MC::IR::IRLabel>());
+        ir.back().reset(new MC::IR::IRLabel(while_end));
+
+        ctx.pop_loop_label();
+        ctx.pop_loop_label();
+    }
+
+    void BreakStatement::_generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir)
+    {
+        std::string break_label = ctx.get_loop_label();
+        ir.push_back(std::unique_ptr<MC::IR::IRJump>());
+        ir.back().reset(new MC::IR::IRJump(break_label));
+    }
+
+    void ContinueStatement::_generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir)
+    {
+        std::string break_label = ctx.get_loop_label();
+        ctx.pop_loop_label();
+        std::string continue_label = ctx.get_loop_label();
+        ctx.add_loop_label(break_label);
+        ir.push_back(std::unique_ptr<MC::IR::IRJump>());
+        ir.back().reset(new MC::IR::IRJump(continue_label));
     }
 
     void NumberAST::_generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir)

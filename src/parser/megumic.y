@@ -62,7 +62,7 @@ using namespace std;
 
 // lexer 返回的所有 token 种类的声明
 // 注意 IDENT 和 INT_CONST 会返回 token 的值, 分别对应 str_val 和 int_val
-%token <token> INT RETURN CONST SEMICOLON COMMA FUNCTION WHILE IF ELSE BREAK
+%token <token> INT RETURN CONST SEMICOLON COMMA FUNCTION WHILE IF ELSE BREAK CONTINUE
 %token <str_val>  AND_OP OR_OP IDENT
 %token <int_val> INT_CONST 
 %token <binop> LE_OP GE_OP EQ_OP NE_OP
@@ -86,7 +86,7 @@ using namespace std;
 %type <array_declare_init_value> InitValArray InitValArrayItems
 // arglist
 %type <block_val> Block BlockItems 
-%type <statement> Stmt BlockItem BreakStmt ReturnStmt WhileStmt  IfStmt AssignStmt Assignment
+%type <statement> Stmt BlockItem BreakStmt ReturnStmt WhileStmt  IfStmt AssignStmt Assignment ContinueStmt
 /* %type <statement> ForStmt ContinueStmt */
 %type <int_val> UnaryOp  
 %type <ast_val> FuncType
@@ -276,7 +276,9 @@ Stmt
 	| BreakStmt
 	| IfStmt
 	| AssignStmt
+	| ContinueStmt
 	| Exp SEMICOLON { $$ = new  MC::ast::node::EvaluateStatement($1); }
+	| SEMICOLON { $$ = new  MC::ast::node::VoidStatement(); }
 
 ReturnStmt
 	: RETURN Exp SEMICOLON { $$ = new MC::ast::node::ReturnStatement($2); } ;
@@ -286,7 +288,8 @@ WhileStmt
 
 BreakStmt
 	: BREAK SEMICOLON { $$ = new MC::ast::node::BreakStatement(); } ;
-
+ContinueStmt
+	: CONTINUE SEMICOLON { $$ = new MC::ast::node::ContinueStatement(); } ;
 IfStmt
 	: IF '(' Exp ')' Stmt { $$ = new MC::ast::node::IfElseStatement($3, $5,new MC::ast::node::VoidStatement()); }
 	| IF '(' Exp ')' Stmt ELSE Stmt { $$ = new MC::ast::node::IfElseStatement($3, $5, $7); };
