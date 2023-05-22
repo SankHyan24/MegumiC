@@ -63,6 +63,7 @@ namespace MC::ast::node
 		Identifier(std::string name) : name(name) {}
 
 	private:
+		virtual void _generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir) override;
 		virtual void _dump() const override
 		{
 			std::cout << "Identifier {" << name << "}" << std::endl;
@@ -93,7 +94,7 @@ namespace MC::ast::node
 		}
 	};
 
-	class FuncTypeAST : public BaseAST // todo ::delete
+	class FuncTypeAST : public BaseAST
 	{
 	public:
 		MC::IR::VarType type;

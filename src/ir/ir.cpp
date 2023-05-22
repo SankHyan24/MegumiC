@@ -154,4 +154,10 @@ namespace MC::IR
         dst = "    ";
         dst += Var + " = load " + Ptr;
     }
+
+    void IRGlobalVar::_generate()
+    {
+        dst = "global ";
+        dst += Var + " = alloc " + getVarTypeStr(AllocType) + ", " + InitList;
+    }
 }

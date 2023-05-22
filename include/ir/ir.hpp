@@ -40,11 +40,11 @@ namespace MC::IR
         GetPtr,        // done
         GetElementPtr, // done
         ArrayDef,
-        Store, // done
-        Load,  // done
-        Alloc, // todo
-        Ret,   // done
-        GlobalVar,
+        Store,     // done
+        Load,      // done
+        Alloc,     // done
+        Ret,       // done
+        GlobalVar, // done
         GlobalArray
     };
 
@@ -244,6 +244,18 @@ namespace MC::IR
         std::string Ptr;
         std::string Var;
         IRLoad(std::string Ptr, std::string Var) : Ptr(Ptr), Var(Var) {}
+
+    private:
+        virtual void _generate() override;
+    };
+
+    class IRGlobalVar : public IRcode
+    {
+    public:
+        std::string Var;
+        VarType AllocType;
+        std::string InitList;
+        IRGlobalVar(std::string Var, VarType AllocType, std::string InitList) : Var(Var), AllocType(AllocType), InitList(InitList) {}
 
     private:
         virtual void _generate() override;

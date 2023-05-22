@@ -23,6 +23,28 @@ namespace MC::ast::node
         }
     }
 
+    void Identifier::_generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir)
+    {
+        if (dynamic_cast<ArrayIdentifier *>(this))
+        {
+            // dynamic_cast<ArrayIdentifier *>(this->ident.get())->store_runtime(rhs, ctx, ir);
+        }
+        else
+        {
+            auto &varinfo = ctx.find_symbol(this->name);
+            if (varinfo.is_array)
+                throw std::runtime_error("Can't fetch the value from a array.");
+            std::string ir_name_ptr = varinfo.name;
+
+            int exp_id = ctx.get_id();
+            std::string ir_name_val = "%" + std::to_string(exp_id);
+            this->id = exp_id;
+
+            ir.push_back(std::unique_ptr<MC::IR::IRLoad>());
+            ir.back().reset(new MC::IR::IRLoad(ir_name_ptr, ir_name_val));
+        }
+    }
+
     void Assignment::_generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir)
     {
         if (dynamic_cast<ArrayIdentifier *>(this->ident.get()))
@@ -56,10 +78,11 @@ namespace MC::ast::node
 
     void VarDeclare::_generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir)
     {
-        if (ctx.is_global()) // TODO:
+        if (ctx.is_global())
         {
             std::string ir_name = "@" + this->name->name;
-            // ir.push_back
+            ir.push_back(std::unique_ptr<MC::IR::IRGlobalVar>());
+            ir.back().reset(new MC::IR::IRGlobalVar(ir_name, this->type, "zeroinit"));
             ctx.insert_symbol(this->name->name, VarInfo(ir_name));
         }
         else
@@ -76,7 +99,15 @@ namespace MC::ast::node
         if (ctx.is_global())
         { // TODO:
             std::string ir_name = "@" + this->name->name;
-            // ir.push_back
+            auto number_casted = dynamic_cast<NumberAST *>(this->init_value.get());
+            if (!number_casted)
+            {
+                throw std::runtime_error("init not a number!");
+            }
+            std::string init_value_string = std::to_string(number_casted->number);
+
+            ir.push_back(std::unique_ptr<MC::IR::IRGlobalVar>());
+            ir.back().reset(new MC::IR::IRGlobalVar(ir_name, this->type, init_value_string));
             ctx.insert_symbol(this->name->name, VarInfo(ir_name));
         }
         else
@@ -112,26 +143,38 @@ namespace MC::ast::node
 
         VarType retType = this->func_type->type;
         std::vector<MC::IR::ArgPair> args;
+        std::vector<std::string> args_to_local_name;
         for (auto &i : this->arg_list->list)
         {
             auto arg_identifier = dynamic_cast<ArrayIdentifier *>(i.get()->name.get());
+            int arg_id = ctx.get_id();
             if (arg_identifier)
             {
                 std::vector<int> shape;
                 // TODO: add shape( no need because the ir cannot recongnize it)
-                std::string arg_name = "%" + std::to_string(ctx.get_id());
-                ctx.insert_symbol(i.get()->name.get()->name, MC::IR::VarInfo(arg_name));
+                std::string arg_name = "@arg" + std::to_string(arg_id);
                 args.push_back({MC::IR::VarType::Ptr, arg_name});
+                args_to_local_name.push_back("%" + std::to_string(arg_id));
+                ctx.insert_symbol(i.get()->name.get()->name, MC::IR::VarInfo("%" + std::to_string(arg_id)));
             }
             else
             {
-                std::string arg_name = "%" + std::to_string(ctx.get_id());
-                ctx.insert_symbol(i.get()->name.get()->name, MC::IR::VarInfo(arg_name));
+                std::string arg_name = "@arg" + std::to_string(arg_id);
                 args.push_back({MC::IR::VarType::Val, arg_name});
+                args_to_local_name.push_back("%" + std::to_string(arg_id));
+                ctx.insert_symbol(i.get()->name.get()->name, MC::IR::VarInfo("%" + std::to_string(arg_id)));
             }
         }
         ir.push_back(std::unique_ptr<MC::IR::IRFuncDef>());
         ir.back().reset(new MC::IR::IRFuncDef(functionName, retType, args));
+
+        for (int i = 0; i < args.size(); i++)
+        {
+            ir.push_back(std::unique_ptr<MC::IR::IRAlloc>());
+            ir.back().reset(new MC::IR::IRAlloc(args_to_local_name.at(i), args.at(i).type));
+            ir.push_back(std::unique_ptr<MC::IR::IRStore>());
+            ir.back().reset(new MC::IR::IRStore(args.at(i).name, args_to_local_name.at(i)));
+        }
 
         this->block->generate_ir(ctx, ir);
 
