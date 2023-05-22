@@ -23,6 +23,29 @@ namespace MC::ast::node
         }
     }
 
+    void Assignment::_generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir)
+    {
+        if (dynamic_cast<ArrayIdentifier *>(this->ident.get()))
+        {
+            // dynamic_cast<ArrayIdentifier *>(this->ident.get())->store_runtime(rhs, ctx, ir);
+        }
+        else
+        {
+            auto &varinfo = ctx.find_symbol(this->ident->name);
+            if (varinfo.is_array)
+                throw std::runtime_error("Can't assign to a array.");
+            std::string ir_name = varinfo.name;
+
+            this->exp->generate_ir(ctx, ir);
+            std::string name = "%" + std::to_string(ctx.get_id());
+            this->id = ctx.get_last_id();
+            // change the varinfo
+            varinfo.name = this->get_name();
+            ir.push_back(std::unique_ptr<IRAssignUnaryOp>());
+            ir.back().reset(new MC::IR::IRAssignUnaryOp(varinfo.name, this->exp->get_name(), MC::IR::BinOp::ADD));
+        }
+    }
+
     void DeclareStatement::_generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir)
     {
         for (auto &i : list)
@@ -49,6 +72,24 @@ namespace MC::ast::node
             ir.push_back(std::unique_ptr<MC::IR::IRAlloc>());
             ir.back().reset(new MC::IR::IRAlloc(ir_name, this->type));
             ctx.insert_symbol(this->name->name, VarInfo(ir_name));
+        }
+    }
+
+    void VarDeclareWithInit::_generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir)
+    {
+        if (ctx.is_global()) // TODO:
+        {
+            std::string ir_name = "@" + this->name->name;
+            // ir.push_back
+            ctx.insert_symbol(this->name->name, VarInfo(ir_name));
+        }
+        else
+        {
+            std::string ir_name = "%" + std::to_string(ctx.get_id()); //?
+            ctx.insert_symbol(this->name->name, VarInfo(ir_name));
+
+            Assignment assign(this->name.get(), this->init_value.get());
+            assign.generate_ir(ctx, ir);
         }
     }
 

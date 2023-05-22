@@ -35,16 +35,15 @@ namespace MC::IR
         AssignBinOp,   // done
         AssignUnaryOp, // done
         AssignImm,     // done
-        Jump,
-        Branch,
-        GetPtr,
-        GetElementPtr,
+        Jump,          // done
+        Branch,        // done
+        GetPtr,        // done
+        GetElementPtr, // done
         ArrayDef,
-        Store,
-        Load,
+        Store, // done
+        Load,  // done
         Alloc, // todo
         Ret,   // done
-        FunctionCall,
         GlobalVar,
         GlobalArray
     };
@@ -167,6 +166,7 @@ namespace MC::IR
     private:
         virtual void _generate() override;
     };
+
     class IRAlloc : public IRcode
     {
     public:
@@ -177,5 +177,77 @@ namespace MC::IR
     private:
         virtual void _generate() override;
     };
+
+    class IRJump : public IRcode
+    {
+    public:
+        std::string Label;
+        IRJump(std::string Label) : Label(Label) {}
+
+    private:
+        virtual void _generate() override;
+    };
+
+    class IRBranch : public IRcode
+    {
+    public:
+        std::string Cond;
+        std::string IfLabel;
+        std::string ElseLabel;
+        IRBranch(std::string Cond, std::string IfLabel, std::string ElseLabel) : Cond(Cond), IfLabel(IfLabel), ElseLabel(ElseLabel) {}
+
+    private:
+        virtual void _generate() override;
+    };
+
+    class IRGetPtr : public IRcode
+    {
+    public:
+        std::string Ptr;
+        std::string Var;
+        IRGetPtr(std::string Ptr, std::string Var) : Ptr(Ptr), Var(Var) {}
+
+    private:
+        virtual void _generate() override;
+    };
+
+    class IRGetElementPtr : public IRcode
+    {
+    public:
+        std::string Ptr;
+        std::string Arr;
+        std::string Ind;
+        IRGetElementPtr(std::string Ptr, std::string Arr, std::string Ind) : Ptr(Ptr), Arr(Arr), Ind(Ind) {}
+
+    private:
+        virtual void _generate() override;
+    };
+
+    class IRStore : public IRcode
+    {
+    public:
+        // store %x, %y
+        // Mem[y]=x
+        std::string Value;
+        std::string AddressOfTarget;
+        IRStore(std::string Value, std::string AddressOfTarget) : Value(Value), AddressOfTarget(AddressOfTarget) {}
+
+    private:
+        virtual void _generate() override;
+    };
+
+    class IRLoad : public IRcode
+    {
+    public:
+        // %x = load %y
+        // x=Mem[y]
+        std::string Ptr;
+        std::string Var;
+        IRLoad(std::string Ptr, std::string Var) : Ptr(Ptr), Var(Var) {}
+
+    private:
+        virtual void _generate() override;
+    };
+
     using IRList = std::list<std::unique_ptr<IRcode>>;
 }

@@ -242,6 +242,7 @@ namespace MC::ast::node
 		Assignment(Identifier *ident, Expression *exp) : ident(std::move(ident)), exp(std::move(exp)) {}
 
 	private:
+		virtual void _generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir) override;
 		void _dump() const override
 		{
 			std::cout << "Assignment { ";
@@ -395,6 +396,7 @@ namespace MC::ast::node
 			: name(std::move(name)), init_value(std::move(init_value)), is_const(is_const){};
 
 	private:
+		virtual void _generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir) override;
 		void _dump() const override
 		{
 			std::cout << "VarDeclareWithInit { ";

@@ -21,8 +21,8 @@ namespace
 
     // mapping from VarType
     char varTypeStr[2][5] = {
-        "*i32",
-        "i32"};
+        "i32",
+        "*i32"};
 
     std::string getVarTypeStr(MC::IR::VarType type)
     {
@@ -78,27 +78,32 @@ namespace MC::IR
 
     void IRRet::_generate()
     {
-        dst = "ret " + retVar;
+        dst = "    ";
+        dst += "ret " + retVar;
     }
 
     void IRAssignImm::_generate()
     {
-        dst = Var + " = " + std::to_string(Imm);
+        dst = "    ";
+        dst += Var + " = " + std::to_string(Imm);
     }
 
     void IRAssignBinOp::_generate()
     {
-        dst = Var + " = " + LHS + " " + BinOp2String(op) + " " + RHS;
+        dst = "    ";
+        dst += Var + " = " + LHS + " " + BinOp2String(op) + " " + RHS;
     }
 
     void IRAssignUnaryOp::_generate()
     {
-        dst = Var + " = " + (op == MC::IR::BinOp::ADD ? "" : BinOp2String(op)) + +" " + RHS;
+        dst = "    ";
+        dst += Var + " = " + (op == MC::IR::BinOp::ADD ? "" : BinOp2String(op)) + +" " + RHS;
     }
 
     void IRCall::_generate()
     {
-        dst = Var + " = call " + FuncName + "(";
+        dst = "    ";
+        dst += Var + " = call " + FuncName + "(";
         for (auto &i : Args)
         {
             dst += i;
@@ -110,6 +115,43 @@ namespace MC::IR
 
     void IRAlloc::_generate()
     {
-        dst = Var + " = alloc " + getVarTypeStr(AllocType);
+        dst = "    ";
+        dst += Var + " = alloc " + getVarTypeStr(AllocType);
+    }
+
+    void IRJump::_generate()
+    {
+        dst = "    ";
+        dst += "jump " + Label;
+    }
+
+    void IRBranch::_generate()
+    {
+        dst = "    ";
+        dst += "br " + Cond + ", " + IfLabel + ", " + ElseLabel;
+    }
+
+    void IRGetPtr::_generate()
+    {
+        dst = "    ";
+        dst += Ptr + " = getptr " + Var;
+    }
+
+    void IRGetElementPtr::_generate()
+    {
+        dst = "    ";
+        dst += Ptr + " = getelemptr " + Arr + ", " + Ind;
+    }
+
+    void IRStore::_generate()
+    {
+        dst = "    ";
+        dst += "store " + Value + ", " + AddressOfTarget;
+    }
+
+    void IRLoad::_generate()
+    {
+        dst = "    ";
+        dst += Var + " = load " + Ptr;
     }
 }
