@@ -73,6 +73,7 @@ namespace MC::IR
         virtual ~IRcode() = default;
 
         void DumpIR();
+        void DumpIRfile();
 
     private:
         virtual void _generate() { std::cout << "cnd"; };

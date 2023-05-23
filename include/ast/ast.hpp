@@ -433,6 +433,7 @@ namespace MC::ast::node
 		ArrayIdentifier(Identifier *ident) : Identifier(*ident){};
 
 	private:
+		virtual void _generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir) override;
 		void _dump() const override
 		{
 			std::cout << "ArrayIdentifier { ";

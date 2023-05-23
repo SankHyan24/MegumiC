@@ -1,5 +1,7 @@
 #include <ir/ir.hpp>
 #include <string>
+#include <iostream>
+#include <fstream>
 namespace
 {
     // mapping from BinOp:
@@ -8,6 +10,21 @@ namespace
         "-",
         "*",
         "/",
+        "%",
+        "<=",
+        ">=",
+        "<",
+        ">",
+        "==",
+        "!=",
+        "&&",
+        "||",
+        "!"};
+    char binOpEngStr[21][5] = {
+        "add",
+        "sub",
+        "mul",
+        "div",
         "%",
         "<=",
         ">=",
@@ -28,6 +45,7 @@ namespace
     {
         return varTypeStr[int(type)];
     }
+
 }
 
 namespace MC::IR
@@ -43,10 +61,26 @@ namespace MC::IR
         return binOpStr[int(op)];
     }
 
+    std::string BinOp2EngString(BinOp op)
+    {
+        return binOpEngStr[int(op)];
+    }
+
     void IRcode::DumpIR()
     {
         this->_generate();
         std::cout << dst << std::endl;
+    }
+
+    void IRcode::DumpIRfile()
+    {
+        this->_generate();
+        // clear file "sc.txt" and dump to it
+        // std::ofstream ofs("../sc.txt", std::ios::trunc);
+
+        std::cout << dst << std::endl;
+
+        // ofs.close();
     }
 
     void IRFuncDef::_generate()
@@ -91,7 +125,7 @@ namespace MC::IR
     void IRAssignBinOp::_generate()
     {
         dst = "    ";
-        dst += Var + " = " + LHS + " " + BinOp2String(op) + " " + RHS;
+        dst += Var + " = " + BinOp2EngString(op) + " " + LHS + ", " + RHS;
     }
 
     void IRAssignUnaryOp::_generate()

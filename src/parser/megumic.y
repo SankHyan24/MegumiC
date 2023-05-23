@@ -76,7 +76,7 @@ using namespace std;
 %type <declare_stmt> Decl VarDecl ConstDecl  ConstDeclStmt VarDeclStmt  
 %type <declare> VarDef ConstDef VarDefOne VarDefArray
 // array
-%type <array_identifier> DefArrayName
+%type <array_identifier> DefArrayName ArrayItem
 
 %type <function_def> FuncDef
 %type <function_define_arg_list> FuncParams
@@ -86,7 +86,7 @@ using namespace std;
 %type <array_declare_init_value> InitValArray InitValArrayItems
 // arglist
 %type <block_val> Block BlockItems 
-%type <statement> Stmt BlockItem BreakStmt ReturnStmt WhileStmt  IfStmt AssignStmt Assignment ContinueStmt
+%type <statement> Stmt BlockItem BreakStmt ReturnStmt WhileStmt  IfStmt AssignStmt Assignment ContinueStmt 
 /* %type <statement> ForStmt ContinueStmt */
 %type <int_val> UnaryOp  
 %type <func_type> FuncType BType 
@@ -118,6 +118,8 @@ CompUnit
 FuncDef
 	: FUNCTION FuncType ident '(' ')' Block { $$ = new MC::ast::node::FunctionDefine($2,$3,(new MC::ast::node::FunctionDefineArgList()),$6);}
 	| FUNCTION FuncType ident '(' FuncParams ')' Block { $$ = new MC::ast::node::FunctionDefine($2,$3,$5,$7);};
+	/* : FuncType ident '(' ')' Block { $$ = new MC::ast::node::FunctionDefine($1,$2,(new MC::ast::node::FunctionDefineArgList()),$5);}
+	| FuncType ident '(' FuncParams ')' Block { $$ = new MC::ast::node::FunctionDefine($1,$2,$4,$6);}; */
 
 FuncParams
 	: FuncParams COMMA FuncParam { $$->list.push_back(std::unique_ptr<MC::ast::node::FunctionDefineArg>());
@@ -365,7 +367,19 @@ LOrExp
 	| LOrExp OR_OP LAndExp { $$ = new MC::ast::node::BinaryExpression($1,MC::IR::BinOp::OR,$3);};
 
 ident: IDENT { $$ = new MC::ast::node::Identifier(*$1); };
-LVal: ident;
+LVal: ident
+	| ArrayItem;
+ArrayItem
+	: LVal '[' Exp ']'{ 
+		$$ = new MC::ast::node::ArrayIdentifier($1);
+		$$->index_list.push_back(std::unique_ptr<MC::ast::node::Expression>());
+		$$->index_list.back().reset($3);
+	}
+	| ArrayItem '[' Exp ']'{
+		$$ = $1;
+		$$->index_list.push_back(std::unique_ptr<MC::ast::node::Expression>());
+		$$->index_list.back().reset($3);
+	};
 %%
 
 void yyerror(unique_ptr<MC::ast::node::BaseAST> &ast, const char *s) {

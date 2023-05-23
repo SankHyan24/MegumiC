@@ -100,33 +100,34 @@ namespace
             initZero_to_ir(ir_value_id + "." + std::to_string(i), i, shape_, ctx, ir);
         }
     }
-}
 
-void initValue_to_ir(std::string ir_value_id, int index, MC::ast::node::Expression *exp, std::vector<int> shape, MC::IR::Context &ctx, MC::IR::IRList &ir)
-{
-    auto initValue = dynamic_cast<MC::ast::node::ArrayDeclareInitValue *>(exp);
-    std::vector<int> shape_;
-    for (int i = 1; i < shape.size(); i++)
-        shape_.push_back(shape[i]);
-
-    if (initValue->value == nullptr) // is a value list
+    void initValue_to_ir(std::string ir_value_id, int index, MC::ast::node::Expression *exp, std::vector<int> shape, MC::IR::Context &ctx, MC::IR::IRList &ir)
     {
+        auto initValue = dynamic_cast<MC::ast::node::ArrayDeclareInitValue *>(exp);
+        std::vector<int> shape_;
+        for (int i = 1; i < shape.size(); i++)
+            shape_.push_back(shape[i]);
 
-        for (int i = 0; i < shape[0]; i++)
+        if (initValue->value == nullptr) // is a value list
         {
-            ir.push_back(std::unique_ptr<MC::IR::IRGetElementPtr>());
-            ir.back().reset(new MC::IR::IRGetElementPtr(ir_value_id + '.' + std::to_string(i), ir_value_id, std::to_string(i)));
-            if (i >= initValue->value_list.size())
-                initZero_to_ir(ir_value_id + "." + std::to_string(i), i, shape_, ctx, ir);
-            else
-                initValue_to_ir(ir_value_id + "." + std::to_string(i), i, initValue->value_list.at(i).get(), shape_, ctx, ir);
+
+            for (int i = 0; i < shape[0]; i++)
+            {
+                ir.push_back(std::unique_ptr<MC::IR::IRGetElementPtr>());
+                ir.back().reset(new MC::IR::IRGetElementPtr(ir_value_id + '.' + std::to_string(i), ir_value_id, std::to_string(i)));
+                if (i >= initValue->value_list.size())
+                    initZero_to_ir(ir_value_id + "." + std::to_string(i), i, shape_, ctx, ir);
+                else
+                    initValue_to_ir(ir_value_id + "." + std::to_string(i), i, initValue->value_list.at(i).get(), shape_, ctx, ir);
+            }
+        }
+        else
+        {
+            ir.push_back(std::unique_ptr<MC::IR::IRStore>());
+            ir.back().reset(new MC::IR::IRStore(std::to_string(get_number(initValue->value.get())), ir_value_id));
         }
     }
-    else
-    {
-        ir.push_back(std::unique_ptr<MC::IR::IRStore>());
-        ir.back().reset(new MC::IR::IRStore(std::to_string(get_number(initValue->value.get())), ir_value_id));
-    }
+
 }
 
 namespace MC::ast::node
@@ -148,7 +149,7 @@ namespace MC::ast::node
     {
         if (dynamic_cast<ArrayIdentifier *>(this))
         {
-            // dynamic_cast<ArrayIdentifier *>(this->ident.get())->store_runtime(rhs, ctx, ir);
+            dynamic_cast<ArrayIdentifier *>(this)->generate_ir(ctx, ir);
         }
         else
         {
@@ -166,11 +167,75 @@ namespace MC::ast::node
         }
     }
 
+    void ArrayIdentifier::_generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir)
+    { // as right value
+        int a_id = ctx.get_id();
+        std::string ir_name_val = "%" + std::to_string(a_id);
+        this->id = a_id;
+
+        auto &varinfo = ctx.find_symbol(this->name);
+        if (!varinfo.is_array)
+            throw std::runtime_error("Can't fetch the value from a variable.");
+        std::string ir_name_ptr = varinfo.name;
+
+        std::vector<int> shape = varinfo.shape;
+        int index_size = this->index_list.size();
+
+        if (shape.size() != index_size)
+            throw std::runtime_error("Index number is not match.");
+
+        for (int i = 0; i < shape.size(); i++)
+        {
+            // if (index[i] >= shape[i])
+            //     throw std::runtime_error("Index out of range.");
+            this->index_list.at(i)->generate_ir(ctx, ir);
+            std::string exp_ir_name = this->index_list.at(i)->get_name();
+            int index_name = ctx.get_id();
+            std::string ptr_ir_name = ir_name_ptr + '.' + std::to_string(index_name);
+            ir.push_back(std::unique_ptr<MC::IR::IRGetElementPtr>());
+            ir.back().reset(new MC::IR::IRGetElementPtr(ptr_ir_name, ir_name_ptr, exp_ir_name));
+            ir_name_ptr = ptr_ir_name;
+        }
+
+        ir.push_back(std::unique_ptr<MC::IR::IRLoad>());
+        ir.back().reset(new MC::IR::IRLoad(ir_name_ptr, ir_name_val));
+    }
+
     void Assignment::_generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir)
     {
         if (dynamic_cast<ArrayIdentifier *>(this->ident.get()))
         {
-            // dynamic_cast<ArrayIdentifier *>(this->ident.get())->store_runtime(rhs, ctx, ir);
+            // right value
+            this->exp->generate_ir(ctx, ir);
+            std::string exp_name = this->exp->get_name();
+
+            // left value
+            auto arrayIdentifier = dynamic_cast<ArrayIdentifier *>(this->ident.get());
+
+            auto &varinfo = ctx.find_symbol(this->ident->name);
+            if (!varinfo.is_array)
+                throw std::runtime_error("Can't assign to a variable.");
+            std::string ir_name = varinfo.name;
+
+            std::vector<int> shape = varinfo.shape;
+            int index_size = arrayIdentifier->index_list.size();
+            if (index_size != shape.size())
+                throw std::runtime_error("Index number is not match.");
+
+            for (int i = 0; i < shape.size(); i++)
+            {
+                arrayIdentifier->index_list.at(i)->generate_ir(ctx, ir);
+                std::string exp_ir_name = arrayIdentifier->index_list.at(i)->get_name();
+                int index_name = ctx.get_id();
+                std::string ptr_ir_name = ir_name + "._" + std::to_string(index_name) + "_";
+                ir.push_back(std::unique_ptr<MC::IR::IRGetElementPtr>());
+                ir.back().reset(new MC::IR::IRGetElementPtr(ptr_ir_name, ir_name, exp_ir_name));
+                ir_name = ptr_ir_name;
+            }
+
+            // store here
+            ir.push_back(std::unique_ptr<MC::IR::IRStore>());
+            ir.back().reset(new MC::IR::IRStore(exp_name, ir_name));
         }
         else
         {
@@ -256,7 +321,7 @@ namespace MC::ast::node
             std::vector<int> shape = get_shape(this->name.get());
             ir.push_back(std::unique_ptr<MC::IR::IRGlobalArray>());
             ir.back().reset(new MC::IR::IRGlobalArray(ir_name, this->type, shape, "zeroinit"));
-            ctx.insert_symbol(this->name->name, VarInfo(ir_name));
+            ctx.insert_symbol(this->name->name, VarInfo(ir_name, true, shape));
         }
         else
         {
@@ -264,7 +329,7 @@ namespace MC::ast::node
             std::vector<int> shape = get_shape(this->name.get());
             ir.push_back(std::unique_ptr<MC::IR::IRArrayDef>());
             ir.back().reset(new MC::IR::IRArrayDef(ir_name, this->type, shape));
-            ctx.insert_symbol(this->name->name, VarInfo(ir_name));
+            ctx.insert_symbol(this->name->name, VarInfo(ir_name, true, shape));
         }
     }
 
@@ -278,7 +343,7 @@ namespace MC::ast::node
 
             ir.push_back(std::unique_ptr<MC::IR::IRGlobalArray>());
             ir.back().reset(new MC::IR::IRGlobalArray(ir_name, this->type, shape, init_value_string));
-            ctx.insert_symbol(this->name->name, VarInfo(ir_name));
+            ctx.insert_symbol(this->name->name, VarInfo(ir_name, true, shape));
         }
         else
         {
@@ -286,7 +351,7 @@ namespace MC::ast::node
             std::vector<int> shape = get_shape(this->name.get());
             ir.push_back(std::unique_ptr<MC::IR::IRArrayDef>());
             ir.back().reset(new MC::IR::IRArrayDef(ir_name, this->type, shape));
-            ctx.insert_symbol(this->name->name, VarInfo(ir_name));
+            ctx.insert_symbol(this->name->name, VarInfo(ir_name, true, shape));
             initValue_to_ir(ir_name, 0, this->init_value.get(), shape, ctx, ir);
         }
     }
@@ -331,6 +396,9 @@ namespace MC::ast::node
         }
         ir.push_back(std::unique_ptr<MC::IR::IRFuncDef>());
         ir.back().reset(new MC::IR::IRFuncDef(functionName, retType, args));
+
+        ir.push_back(std::unique_ptr<MC::IR::IRLabel>());
+        ir.back().reset(new MC::IR::IRLabel("%" + this->name->name + "_entry"));
 
         for (int i = 0; i < args.size(); i++)
         {
