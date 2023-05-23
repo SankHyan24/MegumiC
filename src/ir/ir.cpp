@@ -160,4 +160,29 @@ namespace MC::IR
         dst = "global ";
         dst += Var + " = alloc " + getVarTypeStr(AllocType) + ", " + InitList;
     }
+
+    void IRArrayDef::_generate()
+    {
+        dst = "    ";
+        dst += Var + " = alloc ";
+        VarType type = MC::IR::VarType::Val;
+        for (int i = 0; i < Shape.size(); i++)
+            dst += "[";
+        dst += "i32";
+        for (int i = Shape.size() - 1; i >= 0; i--)
+            dst += ", " + std::to_string(Shape[i]) + "]";
+    }
+
+    void IRGlobalArray::_generate()
+    {
+        dst = "global ";
+        dst += Var + " = alloc ";
+        VarType type = MC::IR::VarType::Val;
+        for (int i = 0; i < Shape.size(); i++)
+            dst += "[";
+        dst += "i32";
+        for (int i = Shape.size() - 1; i >= 0; i--)
+            dst += ", " + std::to_string(Shape[i]) + "]";
+        dst += ", " + InitList;
+    }
 }

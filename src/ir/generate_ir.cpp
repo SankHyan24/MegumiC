@@ -8,6 +8,127 @@
 
 using namespace MC::IR;
 
+namespace
+{
+    int get_number(MC::ast::node::Expression *exp)
+    {
+        auto numberAST = dynamic_cast<MC::ast::node::NumberAST *>(exp);
+        if (!numberAST)
+            throw std::runtime_error("Not a number");
+        return numberAST->number;
+    }
+
+    std::vector<int> get_shape(MC::ast::node::Identifier *identifier)
+    {
+        auto arrayIdentifier = dynamic_cast<MC::ast::node::ArrayIdentifier *>(identifier);
+        if (!arrayIdentifier)
+            throw std::runtime_error("Not a array identifier");
+        std::vector<int> shape;
+        for (auto &i : arrayIdentifier->index_list)
+            shape.push_back(get_number(i.get()));
+        return shape;
+    }
+
+    std::string complete_zeros(std::vector<int> shape)
+    {
+        std::string str;
+        std::vector<int> shape_;
+        for (int i = 1; i < shape.size(); i++)
+            shape_.push_back(shape[i]);
+        if (shape.size() == 0)
+            return "0";
+        for (int i = 0; i < shape[0]; i++)
+        {
+            if (i == 0)
+                str += "{";
+            else
+                str += ", ";
+            if (shape.size() == 1)
+                str += "0";
+            else
+                str += complete_zeros(shape_);
+            if (i == shape[0] - 1)
+                str += "}";
+        }
+        return str;
+    }
+
+    std::string initValue_to_string(MC::ast::node::Expression *exp, std::vector<int> shape)
+    {
+        std::string str;
+        auto initValue = dynamic_cast<MC::ast::node::ArrayDeclareInitValue *>(exp);
+        std::vector<int> shape_;
+        for (int i = 1; i < shape.size(); i++)
+            shape_.push_back(shape[i]);
+        if (initValue->value == nullptr) // is a value list
+        {
+            str += "{";
+            for (int i = 0; i < shape[0]; i++)
+            {
+                if (i >= initValue->value_list.size())
+                {
+                    str += complete_zeros(shape_);
+                }
+                else
+                    str += initValue_to_string(initValue->value_list.at(i).get(), shape_);
+
+                if (i != shape[0] - 1)
+                    str += ", ";
+            }
+            str += "}";
+        }
+        else
+            str += std::to_string(get_number(initValue->value.get()));
+        return str;
+    }
+
+    void initZero_to_ir(std::string ir_value_id, int index, std::vector<int> shape, MC::IR::Context &ctx, MC::IR::IRList &ir)
+    {
+        std::vector<int> shape_;
+        for (int i = 1; i < shape.size(); i++)
+            shape_.push_back(shape[i]);
+        if (shape.size() == 0)
+        {
+            ir.push_back(std::unique_ptr<MC::IR::IRStore>());
+            ir.back().reset(new MC::IR::IRStore(ir_value_id, "0"));
+            return;
+        }
+        for (int i = 0; i < shape[0]; i++)
+        {
+            ir.push_back(std::unique_ptr<MC::IR::IRGetElementPtr>());
+            ir.back().reset(new MC::IR::IRGetElementPtr(ir_value_id + '.' + std::to_string(i), ir_value_id, std::to_string(i)));
+            initZero_to_ir(ir_value_id + "." + std::to_string(i), i, shape_, ctx, ir);
+        }
+    }
+}
+
+void initValue_to_ir(std::string ir_value_id, int index, MC::ast::node::Expression *exp, std::vector<int> shape, MC::IR::Context &ctx, MC::IR::IRList &ir)
+{
+    auto initValue = dynamic_cast<MC::ast::node::ArrayDeclareInitValue *>(exp);
+    std::vector<int> shape_;
+    for (int i = 1; i < shape.size(); i++)
+        shape_.push_back(shape[i]);
+
+    if (initValue->value == nullptr) // is a value list
+    {
+
+        for (int i = 0; i < shape[0]; i++)
+        {
+            ir.push_back(std::unique_ptr<MC::IR::IRGetElementPtr>());
+            ir.back().reset(new MC::IR::IRGetElementPtr(ir_value_id + '.' + std::to_string(i), ir_value_id, std::to_string(i)));
+            if (i >= initValue->value_list.size())
+                initZero_to_ir(ir_value_id + "." + std::to_string(i), i, shape_, ctx, ir);
+            else
+                initValue_to_ir(ir_value_id + "." + std::to_string(i), i, initValue->value_list.at(i).get(), shape_, ctx, ir);
+        }
+    }
+    else
+    {
+        ir.push_back(std::unique_ptr<MC::IR::IRStore>());
+        ir.back().reset(new MC::IR::IRStore(std::to_string(get_number(initValue->value.get())), ir_value_id));
+    }
+}
+
 namespace MC::ast::node
 {
     void BaseAST::_generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir)
@@ -97,7 +218,7 @@ namespace MC::ast::node
     void VarDeclareWithInit::_generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir)
     {
         if (ctx.is_global())
-        { // TODO:
+        {
             std::string ir_name = "@" + this->name->name;
             auto number_casted = dynamic_cast<NumberAST *>(this->init_value.get());
             if (!number_casted)
@@ -124,6 +245,49 @@ namespace MC::ast::node
 
             this->name.reset(assign.ident.release());
             this->init_value.reset(assign.exp.release());
+        }
+    }
+
+    void ArrayDeclare::_generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir)
+    {
+        if (ctx.is_global())
+        {
+            std::string ir_name = "@" + this->name->name;
+            std::vector<int> shape = get_shape(this->name.get());
+            ir.push_back(std::unique_ptr<MC::IR::IRGlobalArray>());
+            ir.back().reset(new MC::IR::IRGlobalArray(ir_name, this->type, shape, "zeroinit"));
+            ctx.insert_symbol(this->name->name, VarInfo(ir_name));
+        }
+        else
+        {
+            std::string ir_name = "%" + std::to_string(ctx.get_id());
+            std::vector<int> shape = get_shape(this->name.get());
+            ir.push_back(std::unique_ptr<MC::IR::IRArrayDef>());
+            ir.back().reset(new MC::IR::IRArrayDef(ir_name, this->type, shape));
+            ctx.insert_symbol(this->name->name, VarInfo(ir_name));
+        }
+    }
+
+    void ArrayDeclareWithInit::_generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir)
+    {
+        if (ctx.is_global())
+        {
+            std::string ir_name = "@" + std::to_string(ctx.get_id());
+            std::vector<int> shape = get_shape(this->name.get());
+            std::string init_value_string = initValue_to_string(this->init_value.get(), shape);
+
+            ir.push_back(std::unique_ptr<MC::IR::IRGlobalArray>());
+            ir.back().reset(new MC::IR::IRGlobalArray(ir_name, this->type, shape, init_value_string));
+            ctx.insert_symbol(this->name->name, VarInfo(ir_name));
+        }
+        else
+        {
+            std::string ir_name = "%" + std::to_string(ctx.get_id());
+            std::vector<int> shape = get_shape(this->name.get());
+            ir.push_back(std::unique_ptr<MC::IR::IRArrayDef>());
+            ir.back().reset(new MC::IR::IRArrayDef(ir_name, this->type, shape));
+            ctx.insert_symbol(this->name->name, VarInfo(ir_name));
+            initValue_to_ir(ir_name, 0, this->init_value.get(), shape, ctx, ir);
         }
     }
 
@@ -340,4 +504,5 @@ namespace MC::ast::node
         ir.push_back(std::unique_ptr<MC::IR::IRCall>());
         ir.back().reset(new MC::IR::IRCall(this_name, funcName, args));
     }
+
 }

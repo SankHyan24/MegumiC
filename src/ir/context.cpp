@@ -59,6 +59,17 @@ namespace MC::IR
         throw std::out_of_range("No such const:" + name);
     }
 
+    bool Context::if_symbol_exist(std::string name)
+    {
+        for (int i = symbol_table.size() - 1; i >= 0; i--)
+        {
+            auto find = symbol_table[i].find(name);
+            if (find != symbol_table[i].end())
+                return true;
+        }
+        return false;
+    }
+
     void Context::create_scope()
     {
         symbol_table.push_back({});

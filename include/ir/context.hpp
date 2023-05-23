@@ -62,6 +62,8 @@ namespace MC::IR
         ConstInfo &find_const(std::string name);
         ConstInfo &find_const_assign(std::string name);
 
+        bool if_symbol_exist(std::string name);
+
         void create_scope();
         void end_scope();
 

@@ -39,13 +39,13 @@ namespace MC::IR
         Branch,        // done
         GetPtr,        // done
         GetElementPtr, // done
-        ArrayDef,
-        Store,     // done
-        Load,      // done
-        Alloc,     // done
-        Ret,       // done
-        GlobalVar, // done
-        GlobalArray
+        ArrayDef,      // done
+        Store,         // done
+        Load,          // done
+        Alloc,         // done
+        Ret,           // done
+        GlobalVar,     // done
+        GlobalArray    // done
     };
 
     enum class VarType
@@ -256,6 +256,32 @@ namespace MC::IR
         VarType AllocType;
         std::string InitList;
         IRGlobalVar(std::string Var, VarType AllocType, std::string InitList) : Var(Var), AllocType(AllocType), InitList(InitList) {}
+
+    private:
+        virtual void _generate() override;
+    };
+
+    class IRArrayDef : public IRcode
+    {
+    public:
+        std::string Var;
+        VarType AllocType;
+        std::vector<int> Shape;
+        IRArrayDef(std::string Var, VarType AllocType, std::vector<int> Shape) : Var(Var), AllocType(AllocType), Shape(Shape) {}
+
+    private:
+        virtual void _generate() override;
+    };
+
+    class IRGlobalArray : public IRcode
+    {
+    public:
+        std::string Var;
+        VarType AllocType;
+        std::vector<int> Shape;
+        std::string InitList;
+        IRGlobalArray(std::string Var, VarType AllocType, std::vector<int> Shape, std::string InitList)
+            : Var(Var), AllocType(AllocType), Shape(Shape), InitList(InitList) {}
 
     private:
         virtual void _generate() override;

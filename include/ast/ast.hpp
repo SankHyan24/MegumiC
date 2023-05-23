@@ -487,6 +487,7 @@ namespace MC::ast::node
 			: name(std::move(name)), init_value(std::move(init_value)), is_const(is_const){};
 
 	private:
+		virtual void _generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir) override;
 		void _dump() const override
 		{
 			std::cout << "ArrayDeclareWithInit { ";
@@ -504,6 +505,7 @@ namespace MC::ast::node
 		ArrayDeclare(ArrayIdentifier *name) : name(std::move(name)){};
 
 	private:
+		virtual void _generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir) override;
 		void _dump() const override
 		{
 		}
