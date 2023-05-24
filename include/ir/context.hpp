@@ -6,6 +6,7 @@
 #include <string>
 #include <unordered_map>
 #include <stack>
+#include <ir/ir.hpp>
 
 namespace MC::IR
 {
@@ -13,9 +14,10 @@ namespace MC::IR
     {
     public:
         std::vector<int> shape;
+        VarType type;
         bool is_array;
         std::string name; // with @$%
-        VarInfo(std::string name, bool is_array = false, std::vector<int> shape = {});
+        VarInfo(std::string name, MC::IR::VarType type=VarType::Val, bool is_array = false, std::vector<int> shape = {});
     };
 
     class ConstInfo
@@ -63,6 +65,7 @@ namespace MC::IR
         ConstInfo &find_const_assign(std::string name);
 
         bool if_symbol_exist(std::string name);
+        bool if_const_exist(std::string name);
 
         void create_scope();
         void end_scope();

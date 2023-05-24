@@ -228,7 +228,7 @@ VarDef
 	;
 
 VarDefOne
-	: ident '=' Exp {$$ = new MC::ast::node::VarDeclareWithInit($1, $3, true); }
+	: ident '=' Exp {$$ = new MC::ast::node::VarDeclareWithInit($1, $3, false); }
 	| ident { $$ =  new MC::ast::node::VarDeclare($1);};
 
 VarDefArray

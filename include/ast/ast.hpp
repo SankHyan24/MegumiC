@@ -41,6 +41,7 @@ namespace MC::ast::node
 	class Expression : public BaseAST
 	{
 	public:
+		int value;
 		void Dump();
 
 	private:
@@ -381,6 +382,7 @@ namespace MC::ast::node
 	{
 	public:
 	private:
+		virtual void _generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir) override;
 		void _dump() const override
 		{
 			std::cout << "VoidStatement { ";

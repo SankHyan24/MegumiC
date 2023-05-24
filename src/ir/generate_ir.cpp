@@ -146,13 +146,26 @@ namespace MC::ast::node
     }
 
     void Identifier::_generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir)
-    {
+    { // only as right value
         if (dynamic_cast<ArrayIdentifier *>(this))
         {
             dynamic_cast<ArrayIdentifier *>(this)->generate_ir(ctx, ir);
         }
         else
         {
+            if (ctx.if_const_exist(this->name)) // TODO:先判断一个作用域里面有没有var再来这里判断const存不存在
+            {
+                auto &constinfo = ctx.find_const(this->name);
+                if (constinfo.is_array)
+                    throw std::runtime_error("Can't fetch the value from a array.");
+                int value = constinfo.value[0];
+                int exp_id = ctx.get_id();
+                std::string ir_name_val = "%" + std::to_string(exp_id);
+                this->id = exp_id;
+
+                return;
+            }
+
             auto &varinfo = ctx.find_symbol(this->name);
             if (varinfo.is_array)
                 throw std::runtime_error("Can't fetch the value from a array.");
@@ -174,7 +187,7 @@ namespace MC::ast::node
         this->id = a_id;
 
         auto &varinfo = ctx.find_symbol(this->name);
-        if (!varinfo.is_array)
+        if (!varinfo.is_array && varinfo.type != MC::IR::VarType::Ptr)
             throw std::runtime_error("Can't fetch the value from a variable.");
         std::string ir_name_ptr = varinfo.name;
 
@@ -295,6 +308,9 @@ namespace MC::ast::node
             ir.push_back(std::unique_ptr<MC::IR::IRGlobalVar>());
             ir.back().reset(new MC::IR::IRGlobalVar(ir_name, this->type, init_value_string));
             ctx.insert_symbol(this->name->name, VarInfo(ir_name));
+
+            if (this->is_const)
+                ctx.insert_const(this->name->name, ConstInfo(get_number(this->init_value.get())));
         }
         else
         {
@@ -310,6 +326,9 @@ namespace MC::ast::node
 
             this->name.reset(assign.ident.release());
             this->init_value.reset(assign.exp.release());
+
+            if (this->is_const)
+                ctx.insert_const(this->name->name, ConstInfo(get_number(this->init_value.get())));
         }
     }
 
@@ -321,7 +340,7 @@ namespace MC::ast::node
             std::vector<int> shape = get_shape(this->name.get());
             ir.push_back(std::unique_ptr<MC::IR::IRGlobalArray>());
             ir.back().reset(new MC::IR::IRGlobalArray(ir_name, this->type, shape, "zeroinit"));
-            ctx.insert_symbol(this->name->name, VarInfo(ir_name, true, shape));
+            ctx.insert_symbol(this->name->name, VarInfo(ir_name, MC::IR::VarType::Ptr, true, shape));
         }
         else
         {
@@ -329,7 +348,7 @@ namespace MC::ast::node
             std::vector<int> shape = get_shape(this->name.get());
             ir.push_back(std::unique_ptr<MC::IR::IRArrayDef>());
             ir.back().reset(new MC::IR::IRArrayDef(ir_name, this->type, shape));
-            ctx.insert_symbol(this->name->name, VarInfo(ir_name, true, shape));
+            ctx.insert_symbol(this->name->name, VarInfo(ir_name, MC::IR::VarType::Ptr, true, shape));
         }
     }
 
@@ -343,7 +362,7 @@ namespace MC::ast::node
 
             ir.push_back(std::unique_ptr<MC::IR::IRGlobalArray>());
             ir.back().reset(new MC::IR::IRGlobalArray(ir_name, this->type, shape, init_value_string));
-            ctx.insert_symbol(this->name->name, VarInfo(ir_name, true, shape));
+            ctx.insert_symbol(this->name->name, VarInfo(ir_name, MC::IR::VarType::Ptr, true, shape));
         }
         else
         {
@@ -351,7 +370,7 @@ namespace MC::ast::node
             std::vector<int> shape = get_shape(this->name.get());
             ir.push_back(std::unique_ptr<MC::IR::IRArrayDef>());
             ir.back().reset(new MC::IR::IRArrayDef(ir_name, this->type, shape));
-            ctx.insert_symbol(this->name->name, VarInfo(ir_name, true, shape));
+            ctx.insert_symbol(this->name->name, VarInfo(ir_name, MC::IR::VarType::Ptr, true, shape));
             initValue_to_ir(ir_name, 0, this->init_value.get(), shape, ctx, ir);
         }
     }
@@ -379,12 +398,12 @@ namespace MC::ast::node
             int arg_id = ctx.get_id();
             if (arg_identifier)
             {
-                std::vector<int> shape;
+                std::vector<int> shape = get_shape(arg_identifier);
                 // TODO: add shape( no need because the ir cannot recongnize it)
                 std::string arg_name = "@arg" + std::to_string(arg_id);
                 args.push_back({MC::IR::VarType::Ptr, arg_name});
                 args_to_local_name.push_back("%" + std::to_string(arg_id));
-                ctx.insert_symbol(i.get()->name.get()->name, MC::IR::VarInfo("%" + std::to_string(arg_id)));
+                ctx.insert_symbol(i.get()->name.get()->name, MC::IR::VarInfo("%" + std::to_string(arg_id), MC::IR::VarType::Ptr, true, shape));
             }
             else
             {
@@ -410,6 +429,9 @@ namespace MC::ast::node
 
         this->block->generate_ir(ctx, ir);
 
+        ir.push_back(std::unique_ptr<MC::IR::IRRet>());
+        ir.back().reset(new MC::IR::IRRet(""));
+
         ir.push_back(std::unique_ptr<MC::IR::IRFuncDefEnd>());
         ir.back().reset(new MC::IR::IRFuncDefEnd());
         ctx.end_scope();
@@ -429,6 +451,8 @@ namespace MC::ast::node
     {
         this->value->generate_ir(ctx, ir);
     }
+
+    void VoidStatement::_generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir) {}
 
     void IfElseStatement::_generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir)
     {

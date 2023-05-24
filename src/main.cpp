@@ -6,7 +6,6 @@
 #include <koopa.h>
 
 #include <config.hpp>
-// #include <koopa.h>
 #include <ast/ast.hpp>
 #include <ast/generate.hpp>
 #include <ir/generate.hpp>

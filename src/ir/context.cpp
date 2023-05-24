@@ -3,8 +3,12 @@
 
 namespace MC::IR
 {
-    VarInfo::VarInfo(std::string name, bool is_array, std::vector<int> shape)
-        : shape(shape), is_array(is_array), name(name) {}
+    VarInfo::VarInfo(std::string name, VarType type, bool is_array, std::vector<int> shape)
+        : shape(shape), type(type), is_array(is_array), name(name) {}
+    ConstInfo::ConstInfo(std::vector<int> value, bool is_array,
+                         std::vector<int> shape)
+        : value(value), shape(shape), is_array(is_array) {}
+    ConstInfo::ConstInfo(int value) : value({value}), shape({}), is_array(false) {}
 
     Context::Context()
     {
@@ -65,6 +69,17 @@ namespace MC::IR
         {
             auto find = symbol_table[i].find(name);
             if (find != symbol_table[i].end())
+                return true;
+        }
+        return false;
+    }
+
+    bool Context::if_const_exist(std::string name)
+    {
+        for (int i = const_table.size() - 1; i >= 0; i--)
+        {
+            auto find = const_table[i].find(name);
+            if (find != const_table[i].end())
                 return true;
         }
         return false;
