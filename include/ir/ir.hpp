@@ -71,9 +71,8 @@ namespace MC::IR
         IROp IRType;
         std::string dst;
         virtual ~IRcode() = default;
-
-        void DumpIR();
-        void DumpIRfile();
+        void generate();
+        std::string dump();
 
     private:
         virtual void _generate() { std::cout << "cnd"; };
@@ -207,7 +206,7 @@ namespace MC::IR
         std::string Ptr;
         std::string Var;
         std::string Index;
-        IRGetPtr(std::string Ptr, std::string Var, std::string Index="") : Ptr(Ptr), Var(Var),Index(Index) {}
+        IRGetPtr(std::string Ptr, std::string Var, std::string Index = "") : Ptr(Ptr), Var(Var), Index(Index) {}
 
     private:
         virtual void _generate() override;
@@ -299,4 +298,17 @@ namespace MC::IR
     };
 
     using IRList = std::list<std::unique_ptr<IRcode>>;
+
+    class IRListWrapper
+    {
+    public:
+        std::unique_ptr<IRList> irList;
+        IRListWrapper() : irList(std::make_unique<IRList>()) {}
+        void Generate();
+        void Dump();
+        void Dump(std::string filename);
+        void Dump(std::ostream &os);
+        std::string toString();
+    };
+
 }

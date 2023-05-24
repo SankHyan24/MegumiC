@@ -10,17 +10,17 @@ using namespace MC::IR;
 
 namespace
 {
-    int get_number(MC::ast::node::Expression *exp)
+    int get_number(MC::AST::node::Expression *exp)
     {
-        auto numberAST = dynamic_cast<MC::ast::node::NumberAST *>(exp);
+        auto numberAST = dynamic_cast<MC::AST::node::NumberAST *>(exp);
         if (!numberAST)
             throw std::runtime_error("Not a number");
         return numberAST->number;
     }
 
-    std::vector<int> get_shape(MC::ast::node::Identifier *identifier)
+    std::vector<int> get_shape(MC::AST::node::Identifier *identifier)
     {
-        auto arrayIdentifier = dynamic_cast<MC::ast::node::ArrayIdentifier *>(identifier);
+        auto arrayIdentifier = dynamic_cast<MC::AST::node::ArrayIdentifier *>(identifier);
         if (!arrayIdentifier)
             throw std::runtime_error("Not a array identifier");
         std::vector<int> shape;
@@ -53,10 +53,10 @@ namespace
         return str;
     }
 
-    std::string initValue_to_string(MC::ast::node::Expression *exp, std::vector<int> shape)
+    std::string initValue_to_string(MC::AST::node::Expression *exp, std::vector<int> shape)
     {
         std::string str;
-        auto initValue = dynamic_cast<MC::ast::node::ArrayDeclareInitValue *>(exp);
+        auto initValue = dynamic_cast<MC::AST::node::ArrayDeclareInitValue *>(exp);
         std::vector<int> shape_;
         for (int i = 1; i < shape.size(); i++)
             shape_.push_back(shape[i]);
@@ -101,9 +101,9 @@ namespace
         }
     }
 
-    void initValue_to_ir(std::string ir_value_id, int index, MC::ast::node::Expression *exp, std::vector<int> shape, MC::IR::Context &ctx, MC::IR::IRList &ir)
+    void initValue_to_ir(std::string ir_value_id, int index, MC::AST::node::Expression *exp, std::vector<int> shape, MC::IR::Context &ctx, MC::IR::IRList &ir)
     {
-        auto initValue = dynamic_cast<MC::ast::node::ArrayDeclareInitValue *>(exp);
+        auto initValue = dynamic_cast<MC::AST::node::ArrayDeclareInitValue *>(exp);
         std::vector<int> shape_;
         for (int i = 1; i < shape.size(); i++)
             shape_.push_back(shape[i]);
@@ -130,7 +130,7 @@ namespace
 
 }
 
-namespace MC::ast::node
+namespace MC::AST::node
 {
     void BaseAST::_generate_ir(MC::IR::Context &ctx, MC::IR::IRList &ir)
     {

@@ -14,7 +14,7 @@
 
 // 声明 lexer 函数和错误处理函数
 int yylex();
-void yyerror(std::unique_ptr<MC::ast::node::BaseAST> &ast, const char *s);
+void yyerror(std::unique_ptr<MC::AST::node::BaseAST> &ast, const char *s);
 
 using namespace std;
 
@@ -23,7 +23,7 @@ using namespace std;
 // 定义 parser 函数和错误处理函数的附加参数
 // 我们需要返回一个字符串作为 AST, 所以我们把附加参数定义成字符串的智能指针
 // 解析完成后, 我们要手动修改这个参数, 把它设置成解析得到的字符串
-%parse-param { std::unique_ptr<MC::ast::node::BaseAST> &ast }
+%parse-param { std::unique_ptr<MC::AST::node::BaseAST> &ast }
 // yylval 的定义, 我们把它定义成了一个联合体 (union)
 // 因为 token 的值有的是字符串指针, 有的是整数
 // 之前我们在 lexer 中用到的 str_val 和 int_val 就是在这里被定义的
@@ -35,29 +35,29 @@ using namespace std;
 	int token;
 	int int_val;
 	std::string *str_val;
-	MC::ast::node::BaseAST *ast_val;
-	MC::ast::node::Identifier* ident;
-	MC::ast::node::Expression *expression_val;
-	MC::ast::node::DeclareStatement *declare_stmt;
-	MC::ast::node::FunctionDefine *function_def;
-	MC::ast::node::Declare *declare;
+	MC::AST::node::BaseAST *ast_val;
+	MC::AST::node::Identifier* ident;
+	MC::AST::node::Expression *expression_val;
+	MC::AST::node::DeclareStatement *declare_stmt;
+	MC::AST::node::FunctionDefine *function_def;
+	MC::AST::node::Declare *declare;
 
-	MC::ast::node::ArrayDeclareInitValue *array_declare_init_value;
-	MC::ast::node::ArrayDeclare *array_delcare;
-	MC::ast::node::ArrayIdentifier *array_identifier;
+	MC::AST::node::ArrayDeclareInitValue *array_declare_init_value;
+	MC::AST::node::ArrayDeclare *array_delcare;
+	MC::AST::node::ArrayIdentifier *array_identifier;
 
-	MC::ast::node::FuncTypeAST *func_type;
-	MC::ast::node::FunctionCallArgList *function_call_arg_list;
-	MC::ast::node::FunctionDefineArgList *function_define_arg_list;
-	MC::ast::node::FunctionDefineArg *function_define_arg;
+	MC::AST::node::FuncTypeAST *func_type;
+	MC::AST::node::FunctionCallArgList *function_call_arg_list;
+	MC::AST::node::FunctionDefineArgList *function_define_arg_list;
+	MC::AST::node::FunctionDefineArg *function_define_arg;
 
-	MC::ast::node::BlockAST *block_val;
-	MC::ast::node::Statement *statement;
-	MC::ast::node::Assignment *Assignment_stmt;
-	MC::ast::node::IfElseStatement* ifelse_stmt;
-	MC::ast::node::ConditionExpression* condition_expression;
+	MC::AST::node::BlockAST *block_val;
+	MC::AST::node::Statement *statement;
+	MC::AST::node::Assignment *Assignment_stmt;
+	MC::AST::node::IfElseStatement* ifelse_stmt;
+	MC::AST::node::ConditionExpression* condition_expression;
 
-	MC::ast::node::CompUnitAST* root;
+	MC::AST::node::CompUnitAST* root;
 	MC::IR::BinOp binop;
 }
 
@@ -99,34 +99,34 @@ using namespace std;
 
 CompUnit
 	: CompUnit Decl { 
-		((MC::ast::node::CompUnitAST*)(ast.get()))->list.push_back(std::unique_ptr<MC::ast::node::DeclareStatement>());
-		((MC::ast::node::CompUnitAST*)(ast.get()))->list.back().reset($2);
+		((MC::AST::node::CompUnitAST*)(ast.get()))->list.push_back(std::unique_ptr<MC::AST::node::DeclareStatement>());
+		((MC::AST::node::CompUnitAST*)(ast.get()))->list.back().reset($2);
 	}	| CompUnit FuncDef { 
-		((MC::ast::node::CompUnitAST*)(ast.get()))->list.push_back(std::unique_ptr<MC::ast::node::FunctionDefine>());
-		((MC::ast::node::CompUnitAST*)(ast.get()))->list.back().reset($<function_def>2);
+		((MC::AST::node::CompUnitAST*)(ast.get()))->list.push_back(std::unique_ptr<MC::AST::node::FunctionDefine>());
+		((MC::AST::node::CompUnitAST*)(ast.get()))->list.back().reset($<function_def>2);
 	}	| Decl { 
-		ast = move(make_unique<MC::ast::node::CompUnitAST>());
-		((MC::ast::node::CompUnitAST*)(ast.get()))->list.push_back(std::unique_ptr<MC::ast::node::DeclareStatement>());
-		((MC::ast::node::CompUnitAST*)(ast.get()))->list.back().reset($1);
+		ast = move(make_unique<MC::AST::node::CompUnitAST>());
+		((MC::AST::node::CompUnitAST*)(ast.get()))->list.push_back(std::unique_ptr<MC::AST::node::DeclareStatement>());
+		((MC::AST::node::CompUnitAST*)(ast.get()))->list.back().reset($1);
 	}	| FuncDef { 
-		ast = move(make_unique<MC::ast::node::CompUnitAST>());
-		((MC::ast::node::CompUnitAST*)(ast.get()))->list.push_back(std::unique_ptr<MC::ast::node::FunctionDefine>());
-		((MC::ast::node::CompUnitAST*)(ast.get()))->list.back().reset($<function_def>1);
+		ast = move(make_unique<MC::AST::node::CompUnitAST>());
+		((MC::AST::node::CompUnitAST*)(ast.get()))->list.push_back(std::unique_ptr<MC::AST::node::FunctionDefine>());
+		((MC::AST::node::CompUnitAST*)(ast.get()))->list.back().reset($<function_def>1);
 	};
 
 // 函数定义
 FuncDef
-	: FUNCTION FuncType ident '(' ')' Block { $$ = new MC::ast::node::FunctionDefine($2,$3,(new MC::ast::node::FunctionDefineArgList()),$6);}
-	| FUNCTION FuncType ident '(' FuncParams ')' Block { $$ = new MC::ast::node::FunctionDefine($2,$3,$5,$7);};
-	/* : FuncType ident '(' ')' Block { $$ = new MC::ast::node::FunctionDefine($1,$2,(new MC::ast::node::FunctionDefineArgList()),$5);}
-	| FuncType ident '(' FuncParams ')' Block { $$ = new MC::ast::node::FunctionDefine($1,$2,$4,$6);}; */
+	: FUNCTION FuncType ident '(' ')' Block { $$ = new MC::AST::node::FunctionDefine($2,$3,(new MC::AST::node::FunctionDefineArgList()),$6);}
+	| FUNCTION FuncType ident '(' FuncParams ')' Block { $$ = new MC::AST::node::FunctionDefine($2,$3,$5,$7);};
+	/* : FuncType ident '(' ')' Block { $$ = new MC::AST::node::FunctionDefine($1,$2,(new MC::AST::node::FunctionDefineArgList()),$5);}
+	| FuncType ident '(' FuncParams ')' Block { $$ = new MC::AST::node::FunctionDefine($1,$2,$4,$6);}; */
 
 FuncParams
-	: FuncParams COMMA FuncParam { $$->list.push_back(std::unique_ptr<MC::ast::node::FunctionDefineArg>());
+	: FuncParams COMMA FuncParam { $$->list.push_back(std::unique_ptr<MC::AST::node::FunctionDefineArg>());
 		$$->list.back().reset($3);
 	}
-	| FuncParam { $$ = new MC::ast::node::FunctionDefineArgList(); 
-	$$->list.push_back(std::unique_ptr<MC::ast::node::FunctionDefineArg>());
+	| FuncParam { $$ = new MC::AST::node::FunctionDefineArgList(); 
+	$$->list.push_back(std::unique_ptr<MC::AST::node::FunctionDefineArg>());
 	$$->list.back().reset($1);
 	};
 
@@ -135,52 +135,52 @@ FuncParam: FuncParamOne
           ;
 
 FuncParamOne
-	: BType ident { $$ = new MC::ast::node::FunctionDefineArg($1, $2); };
+	: BType ident { $$ = new MC::AST::node::FunctionDefineArg($1, $2); };
 
 FuncParamArray
 	: FuncParamArray '[' Exp ']' {
 		$$ = $1;
-		((MC::ast::node::ArrayIdentifier*)($$->name.get()))->index_list.push_back(std::unique_ptr<MC::ast::node::Expression>());
-		((MC::ast::node::ArrayIdentifier*)($$->name.get()))->index_list.back().reset($3);
+		((MC::AST::node::ArrayIdentifier*)($$->name.get()))->index_list.push_back(std::unique_ptr<MC::AST::node::Expression>());
+		((MC::AST::node::ArrayIdentifier*)($$->name.get()))->index_list.back().reset($3);
 	}
 	| FuncParamOne {
-		$$ = new MC::ast::node::FunctionDefineArg($1->type.get(), new MC::ast::node::ArrayIdentifier($1->name->name));
+		$$ = new MC::AST::node::FunctionDefineArg($1->type.get(), new MC::AST::node::ArrayIdentifier($1->name->name));
 	}
 
 FuncType
-	: INT { $$ = new MC::ast::node::FuncTypeAST(MC::IR::VarType::Val); } ;
-	| PTR { $$ = new MC::ast::node::FuncTypeAST(MC::IR::VarType::Ptr); } ;
+	: INT { $$ = new MC::AST::node::FuncTypeAST(MC::IR::VarType::Val); } ;
+	| PTR { $$ = new MC::AST::node::FuncTypeAST(MC::IR::VarType::Ptr); } ;
 
 
 
 FunctionCall
-	: ident '(' ')' { $$ = new MC::ast::node::FunctionCall($1, new MC::ast::node::FunctionCallArgList()); }
-	| ident '(' FuncRParams ')' { $$ = new MC::ast::node::FunctionCall($1, $3); };
+	: ident '(' ')' { $$ = new MC::AST::node::FunctionCall($1, new MC::AST::node::FunctionCallArgList()); }
+	| ident '(' FuncRParams ')' { $$ = new MC::AST::node::FunctionCall($1, $3); };
 
 
 FuncRParams
 	: FuncRParams COMMA AddExp { 
-		$$->arg_list.push_back(std::unique_ptr<MC::ast::node::Expression>());
+		$$->arg_list.push_back(std::unique_ptr<MC::AST::node::Expression>());
 		$$->arg_list.back().reset($3);
 	}
 	| AddExp { 
-		$$ = new MC::ast::node::FunctionCallArgList(); 
-		$$->arg_list.push_back(std::unique_ptr<MC::ast::node::Expression>());
+		$$ = new MC::AST::node::FunctionCallArgList(); 
+		$$->arg_list.push_back(std::unique_ptr<MC::AST::node::Expression>());
 		$$->arg_list.back().reset($1);
 	};
 
 Block
-	: '{' '}'{ $$ = new MC::ast::node::BlockAST();}
+	: '{' '}'{ $$ = new MC::AST::node::BlockAST();}
 	| '{' BlockItems '}' { $$ = $2; };
 	 
 
 BlockItems
-	: BlockItem { $$ = new MC::ast::node::BlockAST(); 
-		$$->stmt.push_back(std::unique_ptr<MC::ast::node::Statement>());
+	: BlockItem { $$ = new MC::AST::node::BlockAST(); 
+		$$->stmt.push_back(std::unique_ptr<MC::AST::node::Statement>());
 		$$->stmt.back().reset($1);
 	}
 	| BlockItems BlockItem { $$ = $1;
-		$$->stmt.push_back(std::unique_ptr<MC::ast::node::Statement>());
+		$$->stmt.push_back(std::unique_ptr<MC::AST::node::Statement>());
 		$$->stmt.back().reset($2);
 	};
 
@@ -197,28 +197,28 @@ ConstDeclStmt
 	: ConstDecl SEMICOLON { $$ = $1; } ;
 
 ConstDecl
-	: CONST BType ConstDef { $$ = new MC::ast::node::DeclareStatement($2); 
-		$$->list.push_back(std::unique_ptr<MC::ast::node::Declare>());
+	: CONST BType ConstDef { $$ = new MC::AST::node::DeclareStatement($2); 
+		$$->list.push_back(std::unique_ptr<MC::AST::node::Declare>());
 		$$->list.back().reset($3);
 	} 
-	| ConstDecl COMMA ConstDef { $$->list.push_back(std::unique_ptr<MC::ast::node::Declare>());
+	| ConstDecl COMMA ConstDef { $$->list.push_back(std::unique_ptr<MC::AST::node::Declare>());
 		$$->list.back().reset($3);
 	};
 
 ConstDef 
-	: ident '=' Exp { $$ = new MC::ast::node::VarDeclareWithInit($1, $3, true);};
+	: ident '=' Exp { $$ = new MC::AST::node::VarDeclareWithInit($1, $3, true);};
 
 
 VarDeclStmt
 	: VarDecl SEMICOLON { $$ = $1; } ;
 
 VarDecl
-	: BType VarDef {$$ = new MC::ast::node::DeclareStatement($1); 
-		$$->list.push_back(std::unique_ptr<MC::ast::node::Declare>());
+	: BType VarDef {$$ = new MC::AST::node::DeclareStatement($1); 
+		$$->list.push_back(std::unique_ptr<MC::AST::node::Declare>());
 		$$->list.back().reset($2);
 	} 
 	| VarDecl COMMA VarDef { 
-		$$->list.push_back(std::unique_ptr<MC::ast::node::Declare>());
+		$$->list.push_back(std::unique_ptr<MC::AST::node::Declare>());
 		$$->list.back().reset($3);
 	};
 
@@ -228,44 +228,44 @@ VarDef
 	;
 
 VarDefOne
-	: ident '=' Exp {$$ = new MC::ast::node::VarDeclareWithInit($1, $3, false); }
-	| ident { $$ =  new MC::ast::node::VarDeclare($1);};
+	: ident '=' Exp {$$ = new MC::AST::node::VarDeclareWithInit($1, $3, false); }
+	| ident { $$ =  new MC::AST::node::VarDeclare($1);};
 
 VarDefArray
-	: DefArrayName '=' InitValArray { $$ = new MC::ast::node::ArrayDeclareWithInit($1,$3);}
-	| DefArrayName { $$ = new MC::ast::node::ArrayDeclare($1); }
+	: DefArrayName '=' InitValArray { $$ = new MC::AST::node::ArrayDeclareWithInit($1,$3);}
+	| DefArrayName { $$ = new MC::AST::node::ArrayDeclare($1); }
 
 InitValArray
 	: '{' InitValArrayItems '}' { $$ = $2; }
-	| '{' '}' { $$ = new MC::ast::node::ArrayDeclareInitValue(false, nullptr);};// ?
+	| '{' '}' { $$ = new MC::AST::node::ArrayDeclareInitValue(false, nullptr);};// ?
 
 InitValArrayItems
 	: InitValArrayItems COMMA InitValArray { $$ = $1;
-		$$->value_list.push_back(std::unique_ptr<MC::ast::node::ArrayDeclareInitValue>());
+		$$->value_list.push_back(std::unique_ptr<MC::AST::node::ArrayDeclareInitValue>());
 		$$->value_list.back().reset($3);
 	}
 	| InitValArrayItems COMMA AddExp { $$ = $1;
-		$$->value_list.push_back(std::unique_ptr<MC::ast::node::ArrayDeclareInitValue>());
-		auto tmp = new MC::ast::node::ArrayDeclareInitValue(true, $3);
+		$$->value_list.push_back(std::unique_ptr<MC::AST::node::ArrayDeclareInitValue>());
+		auto tmp = new MC::AST::node::ArrayDeclareInitValue(true, $3);
 		$$->value_list.back().reset(tmp);//
 	}
-	| InitValArray { $$ = new MC::ast::node::ArrayDeclareInitValue(true, nullptr);
-		$$->value_list.push_back(std::unique_ptr<MC::ast::node::ArrayDeclareInitValue>());
+	| InitValArray { $$ = new MC::AST::node::ArrayDeclareInitValue(true, nullptr);
+		$$->value_list.push_back(std::unique_ptr<MC::AST::node::ArrayDeclareInitValue>());
 		$$->value_list.back().reset($1);
 	}
-	| AddExp { $$ = new MC::ast::node::ArrayDeclareInitValue(true, nullptr);
-		$$->value_list.push_back(std::unique_ptr<MC::ast::node::ArrayDeclareInitValue>());
-		auto tmp = new MC::ast::node::ArrayDeclareInitValue(true, $1);
+	| AddExp { $$ = new MC::AST::node::ArrayDeclareInitValue(true, nullptr);
+		$$->value_list.push_back(std::unique_ptr<MC::AST::node::ArrayDeclareInitValue>());
+		auto tmp = new MC::AST::node::ArrayDeclareInitValue(true, $1);
 		$$->value_list.back().reset(tmp);// 
 	};
 
 DefArrayName
 	: DefArrayName '[' AddExp ']' { $$ = $1;
-		$$->index_list.push_back(std::unique_ptr<MC::ast::node::Expression>());
+		$$->index_list.push_back(std::unique_ptr<MC::AST::node::Expression>());
 		$$->index_list.back().reset($3);
 	}
-	| ident '[' AddExp ']' { $$ = new MC::ast::node::ArrayIdentifier($1);
-		$$->index_list.push_back(std::unique_ptr<MC::ast::node::Expression>());
+	| ident '[' AddExp ']' { $$ = new MC::AST::node::ArrayIdentifier($1);
+		$$->index_list.push_back(std::unique_ptr<MC::AST::node::Expression>());
 		$$->index_list.back().reset($3);
 	};
 
@@ -280,26 +280,26 @@ Stmt
 	| IfStmt
 	| AssignStmt
 	| ContinueStmt
-	| Exp SEMICOLON { $$ = new  MC::ast::node::EvaluateStatement($1); }
-	| SEMICOLON { $$ = new  MC::ast::node::VoidStatement(); }
+	| Exp SEMICOLON { $$ = new  MC::AST::node::EvaluateStatement($1); }
+	| SEMICOLON { $$ = new  MC::AST::node::VoidStatement(); }
 
 ReturnStmt
-	: RETURN Exp SEMICOLON { $$ = new MC::ast::node::ReturnStatement($2); } ;
+	: RETURN Exp SEMICOLON { $$ = new MC::AST::node::ReturnStatement($2); } ;
 
 WhileStmt
-	: WHILE '(' Exp ')' Stmt { $$ = new MC::ast::node::WhileStatement($3, $5); } ;
+	: WHILE '(' Exp ')' Stmt { $$ = new MC::AST::node::WhileStatement($3, $5); } ;
 
 BreakStmt
-	: BREAK SEMICOLON { $$ = new MC::ast::node::BreakStatement(); } ;
+	: BREAK SEMICOLON { $$ = new MC::AST::node::BreakStatement(); } ;
 ContinueStmt
-	: CONTINUE SEMICOLON { $$ = new MC::ast::node::ContinueStatement(); } ;
+	: CONTINUE SEMICOLON { $$ = new MC::AST::node::ContinueStatement(); } ;
 IfStmt
-	: IF '(' Exp ')' Stmt { $$ = new MC::ast::node::IfElseStatement($3, $5,new MC::ast::node::VoidStatement()); }
-	| IF '(' Exp ')' Stmt ELSE Stmt { $$ = new MC::ast::node::IfElseStatement($3, $5, $7); };
+	: IF '(' Exp ')' Stmt { $$ = new MC::AST::node::IfElseStatement($3, $5,new MC::AST::node::VoidStatement()); }
+	| IF '(' Exp ')' Stmt ELSE Stmt { $$ = new MC::AST::node::IfElseStatement($3, $5, $7); };
 AssignStmt
 	: Assignment SEMICOLON { $$ = $1; } ;
 Assignment
-	: LVal '=' Exp { $$ = new MC::ast::node::Assignment($1, $3); };
+	: LVal '=' Exp { $$ = new MC::AST::node::Assignment($1, $3); };
 
 //
 Exp 
@@ -311,12 +311,12 @@ PrimaryExp
 	| Number;
 
 Number
-	: INT_CONST {$$ = new MC::ast::node::NumberAST($1);};
+	: INT_CONST {$$ = new MC::AST::node::NumberAST($1);};
 
 UnaryExp
 	: PrimaryExp 
 	| FunctionCall
-	| UnaryOp UnaryExp { $$= new MC::ast::node::UnaryExpression($1,$2);};
+	| UnaryOp UnaryExp { $$= new MC::AST::node::UnaryExpression($1,$2);};
 
 UnaryOp
 	: '+' {$$ = '+';}
@@ -344,45 +344,45 @@ EqOp
 
 MulExp
 	: UnaryExp 
-	| MulExp MulOp UnaryExp {$$ = new MC::ast::node::BinaryExpression($1,$2,$3);};
+	| MulExp MulOp UnaryExp {$$ = new MC::AST::node::BinaryExpression($1,$2,$3);};
 
 AddExp
 	: MulExp 
-	| AddExp AddOp MulExp {$$ = new MC::ast::node::BinaryExpression($1,$2,$3);};
+	| AddExp AddOp MulExp {$$ = new MC::AST::node::BinaryExpression($1,$2,$3);};
 
 RelExp
 	: AddExp 
-	| RelExp RelOp AddExp {$$ = new MC::ast::node::BinaryExpression($1,$2,$3);};
+	| RelExp RelOp AddExp {$$ = new MC::AST::node::BinaryExpression($1,$2,$3);};
 
 EqExp
 	: RelExp
-	| EqExp EqOp RelExp { $$ = new MC::ast::node::BinaryExpression($1,$2,$3);};
+	| EqExp EqOp RelExp { $$ = new MC::AST::node::BinaryExpression($1,$2,$3);};
 
 LAndExp
 	: EqExp
-	| LAndExp AND_OP EqExp { $$ = new MC::ast::node::BinaryExpression($1,MC::IR::BinOp::AND,$3);};
+	| LAndExp AND_OP EqExp { $$ = new MC::AST::node::BinaryExpression($1,MC::IR::BinOp::AND,$3);};
 
 LOrExp
 	: LAndExp 
-	| LOrExp OR_OP LAndExp { $$ = new MC::ast::node::BinaryExpression($1,MC::IR::BinOp::OR,$3);};
+	| LOrExp OR_OP LAndExp { $$ = new MC::AST::node::BinaryExpression($1,MC::IR::BinOp::OR,$3);};
 
-ident: IDENT { $$ = new MC::ast::node::Identifier(*$1); };
+ident: IDENT { $$ = new MC::AST::node::Identifier(*$1); };
 LVal: ident
 	| ArrayItem;
 ArrayItem
 	: LVal '[' Exp ']'{ 
-		$$ = new MC::ast::node::ArrayIdentifier($1);
-		$$->index_list.push_back(std::unique_ptr<MC::ast::node::Expression>());
+		$$ = new MC::AST::node::ArrayIdentifier($1);
+		$$->index_list.push_back(std::unique_ptr<MC::AST::node::Expression>());
 		$$->index_list.back().reset($3);
 	}
 	| ArrayItem '[' Exp ']'{
 		$$ = $1;
-		$$->index_list.push_back(std::unique_ptr<MC::ast::node::Expression>());
+		$$->index_list.push_back(std::unique_ptr<MC::AST::node::Expression>());
 		$$->index_list.back().reset($3);
 	};
 %%
 
-void yyerror(unique_ptr<MC::ast::node::BaseAST> &ast, const char *s) {
+void yyerror(unique_ptr<MC::AST::node::BaseAST> &ast, const char *s) {
 	cerr << "error: " << s << endl;
 }
 

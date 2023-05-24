@@ -8,6 +8,6 @@ namespace MC::IR
     /***
      * @brief Generate IR from AST
      */
-    std::unique_ptr<IRList> generate(std::unique_ptr<MC::ast::node::BaseAST> &ast);
+    std::unique_ptr<IRListWrapper> generate(std::unique_ptr<MC::AST::node::BaseAST> &ast);
 
 }

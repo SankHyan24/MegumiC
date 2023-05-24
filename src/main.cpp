@@ -9,26 +9,28 @@
 #include <ast/ast.hpp>
 #include <ast/generate.hpp>
 #include <ir/generate.hpp>
+#include <assembly/generate.hpp>
 
 using namespace std;
-extern FILE *yyin;
 
 int main(int argc, const char *argv[])
 {
-	MC::config::parse_arg(argc, argv);
+	MC::config::Config config(argc, argv);
 
-	yyin = fopen(MC::config::inputfile.c_str(), "r");
-	assert(yyin);
+	FILE *inputFile = fopen(config.inputFile.c_str(), "r");
 
 	// generate ast here
-	auto ast = MC::ast::node::generate(yyin);
+	auto ast = MC::AST::node::generate(inputFile);
 	ast->Dump();
 
 	// generate ir here
 	auto ir = MC::IR::generate(ast);
-	for (auto &i : *ir)
-		i->DumpIR();
-	std::cout << "done" << std::endl;
+	ir->Dump();
+
+	// generate assembly here
+	auto assembly = MC::ASM::generate(ir);
+
+	std::cout << "done" << MC::ASM::add(1, 2) << std::endl;
 
 	return 0;
 }

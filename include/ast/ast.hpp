@@ -6,7 +6,7 @@
 #include <ir/ir.hpp>
 #include <ir/context.hpp>
 // 所有 AST 的基类
-namespace MC::ast::node
+namespace MC::AST::node
 {
 
 	class BaseAST

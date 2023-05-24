@@ -1,6 +1,6 @@
 #include <ast/ast.hpp>
 #include <stack>
-using namespace MC::ast::node;
+using namespace MC::AST::node;
 
 namespace
 {

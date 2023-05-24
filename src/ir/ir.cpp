@@ -66,21 +66,14 @@ namespace MC::IR
         return binOpEngStr[int(op)];
     }
 
-    void IRcode::DumpIR()
+    void IRcode::generate()
     {
         this->_generate();
-        std::cout << dst << std::endl;
     }
 
-    void IRcode::DumpIRfile()
+    std::string IRcode::dump()
     {
-        this->_generate();
-        // clear file "sc.txt" and dump to it
-        // std::ofstream ofs("../sc.txt", std::ios::trunc);
-
-        std::cout << dst << std::endl;
-
-        // ofs.close();
+        return dst + "\n";
     }
 
     void IRFuncDef::_generate()
@@ -223,5 +216,36 @@ namespace MC::IR
     void IRVoid::_generate()
     {
         dst = "";
+    }
+
+    void IRListWrapper::Generate()
+    {
+        for (auto &i : *irList)
+            i->generate();
+    }
+
+    std::string IRListWrapper::toString()
+    {
+        std::string ret;
+        for (auto &i : *irList)
+            ret += i->dump();
+        return ret;
+    }
+
+    void IRListWrapper::Dump()
+    {
+        std::cout << toString();
+    }
+
+    void IRListWrapper::Dump(std::string filename)
+    {
+        std::ofstream fout(filename);
+        fout << toString();
+        fout.close();
+    }
+
+    void IRListWrapper::Dump(std::ostream &os)
+    {
+        os << toString();
     }
 }

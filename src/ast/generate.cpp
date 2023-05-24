@@ -6,10 +6,11 @@ extern void yyset_lineno(int _line_number);
 // extern int yycolumn;
 void yyset_in(FILE *_in_str);
 
-namespace MC::ast::node
+namespace MC::AST::node
 {
     std::unique_ptr<BaseAST> generate(FILE *input)
     {
+        assert(input);
         std::unique_ptr<BaseAST> ast;
         yyset_in(input);
         yyset_lineno(1);

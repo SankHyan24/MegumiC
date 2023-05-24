@@ -6,7 +6,7 @@
 #include <config.hpp>
 #include <ir/ir.hpp>
 using namespace MC::IR;
-namespace MC::ast::node
+namespace MC::AST::node
 {
 
 }

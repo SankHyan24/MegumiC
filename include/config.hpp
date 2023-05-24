@@ -7,9 +7,31 @@
 
 namespace MC::config
 {
-    extern int mode;
-    extern std::string inputfile;
-    extern std::string outputfile;
+    enum class StartMode
+    {
+        MC,
+        IR
+    };
+    enum class EndMode
+    {
+        IR,
+        RV32
+    };
+    enum class OptMode
+    {
+        None,
+        O1,
+        O2,
+        O3
+    };
+    class Config
+    {
+    public:
+        std::string inputFile;
+        std::string irOutputFile;
+        std::string targetOutputFile;
+        Config(int argc, const char *argv[]);
 
-    void parse_arg(int argc, const char *argv[]);
+    private:
+    };
 }
