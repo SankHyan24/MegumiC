@@ -74,6 +74,14 @@ namespace MC::IR
         return false;
     }
 
+    bool Context::if_symbol_exist_in_this_scope(std::string name)
+    {
+        auto find = symbol_table.back().find(name);
+        if (find != symbol_table.back().end())
+            return true;
+        return false;
+    }
+
     bool Context::if_const_exist(std::string name)
     {
         for (int i = const_table.size() - 1; i >= 0; i--)

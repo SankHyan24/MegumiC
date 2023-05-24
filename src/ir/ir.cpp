@@ -168,7 +168,7 @@ namespace MC::IR
     void IRGetPtr::_generate()
     {
         dst = "    ";
-        dst += Ptr + " = getptr " + Var;
+        dst += Ptr + " = getptr " + Var + (Index.empty() ? ", 0" : ", " + Index);
     }
 
     void IRGetElementPtr::_generate()
@@ -218,5 +218,10 @@ namespace MC::IR
         for (int i = Shape.size() - 1; i >= 0; i--)
             dst += ", " + std::to_string(Shape[i]) + "]";
         dst += ", " + InitList;
+    }
+
+    void IRVoid::_generate()
+    {
+        dst = "";
     }
 }

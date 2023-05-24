@@ -1,6 +1,8 @@
 build/
 .vscode/
 *.mc
+*back_main*
+
 
 # Prerequisites
 *.d

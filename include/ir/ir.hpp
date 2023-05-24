@@ -206,7 +206,8 @@ namespace MC::IR
     public:
         std::string Ptr;
         std::string Var;
-        IRGetPtr(std::string Ptr, std::string Var) : Ptr(Ptr), Var(Var) {}
+        std::string Index;
+        IRGetPtr(std::string Ptr, std::string Var, std::string Index="") : Ptr(Ptr), Var(Var),Index(Index) {}
 
     private:
         virtual void _generate() override;
@@ -283,6 +284,15 @@ namespace MC::IR
         std::string InitList;
         IRGlobalArray(std::string Var, VarType AllocType, std::vector<int> Shape, std::string InitList)
             : Var(Var), AllocType(AllocType), Shape(Shape), InitList(InitList) {}
+
+    private:
+        virtual void _generate() override;
+    };
+
+    class IRVoid : public IRcode
+    {
+    public:
+        IRVoid() {}
 
     private:
         virtual void _generate() override;

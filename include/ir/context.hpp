@@ -17,7 +17,7 @@ namespace MC::IR
         VarType type;
         bool is_array;
         std::string name; // with @$%
-        VarInfo(std::string name, MC::IR::VarType type=VarType::Val, bool is_array = false, std::vector<int> shape = {});
+        VarInfo(std::string name, MC::IR::VarType type = VarType::Val, bool is_array = false, std::vector<int> shape = {});
     };
 
     class ConstInfo
@@ -66,8 +66,9 @@ namespace MC::IR
 
         bool if_symbol_exist(std::string name);
         bool if_const_exist(std::string name);
+        bool if_symbol_exist_in_this_scope(std::string name);
 
-        void create_scope();
+            void create_scope();
         void end_scope();
 
         void add_loop_label(std::string label);
