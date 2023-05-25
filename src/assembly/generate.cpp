@@ -2,16 +2,10 @@
 
 namespace MC::ASM
 {
-    std::unique_ptr<AssemblyList> generate(MC::IR::IRListWrapper &irs)
+    std::unique_ptr<AssemblyList> generate(std::unique_ptr<MC::IR::IRListWrapper> &irs, std::ostream &out)
     {
-        generate(irs, std::cout);
-    }
-    std::unique_ptr<AssemblyList> generate(MC::IR::IRListWrapper &irs, std::ostream &out)
-    {
-    }
-
-    int add(int a, int b)
-    {
-        return a + b;
+        AssemblyList assemblyList(irs);
+        assemblyList.Generate();
+        return std::make_unique<AssemblyList>(std::move(assemblyList));
     }
 }

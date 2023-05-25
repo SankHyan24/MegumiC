@@ -9,6 +9,10 @@
 
 // 因为 Flex 会用到 Bison 中关于 token 的定义
 // 所以需要 include Bison 生成的头文件
+
+// "<"             { return LT_OP;}
+// ">"             { return GT_OP;}
+// "="             { return ASSIGN;}
 #include "megumic.tab.hpp"
 
 using namespace std;
@@ -42,6 +46,7 @@ Hexadecimal   0[xX][0-9a-fA-F]+
 "else"          { return ELSE; }
 "break"         { return BREAK; }
 "continue"      { return CONTINUE;}
+
 
 
 "<="            { return LE_OP; }

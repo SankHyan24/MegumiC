@@ -1,6 +1,6 @@
 #pragma once
 #include <iostream>
-#include <list>
+#include <vector>
 #include <string>
 #include <iostream>
 #include <functional>
@@ -45,7 +45,8 @@ namespace MC::IR
         Alloc,         // done
         Ret,           // done
         GlobalVar,     // done
-        GlobalArray    // done
+        GlobalArray,   // done
+        Void           // done
     };
 
     enum class VarType
@@ -68,7 +69,10 @@ namespace MC::IR
     class IRcode
     {
     public:
-        IROp IRType;
+        IROp IRType{IROp::Void};
+        bool if_new_var{false};
+        std::string new_var_name;
+
         std::string dst;
         virtual ~IRcode() = default;
         void generate();
@@ -297,7 +301,7 @@ namespace MC::IR
         virtual void _generate() override;
     };
 
-    using IRList = std::list<std::unique_ptr<IRcode>>;
+    using IRList = std::vector<std::unique_ptr<IRcode>>;
 
     class IRListWrapper
     {

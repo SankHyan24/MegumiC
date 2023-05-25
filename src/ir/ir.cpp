@@ -78,6 +78,7 @@ namespace MC::IR
 
     void IRFuncDef::_generate()
     {
+        IRType = MC::IR::IROp::FuncDef;
         dst = "fun " + funcName;
         dst += "(";
         for (auto &i : args)
@@ -95,40 +96,55 @@ namespace MC::IR
 
     void IRFuncDefEnd::_generate()
     {
+        IRType = MC::IR::IROp::FuncDefEnd;
         dst = "}";
     }
 
     void IRLabel::_generate()
     {
+        IRType = MC::IR::IROp::Label;
         dst = labelName + ":";
     }
 
     void IRRet::_generate()
     {
+        IRType = MC::IR::IROp::Ret;
         dst = "    ";
         dst += "ret " + retVar;
     }
 
     void IRAssignImm::_generate()
     {
+        if_new_var = true;
+        new_var_name = Var;
+        IRType = MC::IR::IROp::AssignImm;
         dst = "    ";
         dst += Var + " = " + std::to_string(Imm);
     }
 
     void IRAssignBinOp::_generate()
     {
+        if_new_var = true;
+        new_var_name = Var;
+        IRType = MC::IR::IROp::AssignBinOp;
         dst = "    ";
         dst += Var + " = " + BinOp2EngString(op) + " " + LHS + ", " + RHS;
     }
 
     void IRAssignUnaryOp::_generate()
     {
+        if_new_var = true;
+        new_var_name = Var;
+        IRType = MC::IR::IROp::AssignUnaryOp;
         dst = "    ";
         dst += Var + " = " + (op == MC::IR::BinOp::ADD ? "" : BinOp2String(op)) + +" " + RHS;
     }
 
     void IRCall::_generate()
     {
+        if_new_var = true;
+        new_var_name = Var;
+        IRType = MC::IR::IROp::Call;
         dst = "    ";
         dst += Var + " = call " + FuncName + "(";
         for (auto &i : Args)
@@ -142,54 +158,75 @@ namespace MC::IR
 
     void IRAlloc::_generate()
     {
+        if_new_var = true;
+        new_var_name = Var;
+        IRType = MC::IR::IROp::Alloc;
         dst = "    ";
         dst += Var + " = alloc " + getVarTypeStr(AllocType);
     }
 
     void IRJump::_generate()
     {
+        IRType = MC::IR::IROp::Jump;
         dst = "    ";
         dst += "jump " + Label;
     }
 
     void IRBranch::_generate()
     {
+        IRType = MC::IR::IROp::Branch;
         dst = "    ";
         dst += "br " + Cond + ", " + IfLabel + ", " + ElseLabel;
     }
 
     void IRGetPtr::_generate()
     {
+        if_new_var = true;
+        new_var_name = Ptr;
+        IRType = MC::IR::IROp::GetPtr;
         dst = "    ";
         dst += Ptr + " = getptr " + Var + (Index.empty() ? ", 0" : ", " + Index);
     }
 
     void IRGetElementPtr::_generate()
     {
+        if_new_var = true;
+        new_var_name = Ptr;
+        IRType = MC::IR::IROp::GetElementPtr;
         dst = "    ";
         dst += Ptr + " = getelemptr " + Arr + ", " + Ind;
     }
 
     void IRStore::_generate()
     {
+        IRType = MC::IR::IROp::Store;
         dst = "    ";
         dst += "store " + Value + ", " + AddressOfTarget;
     }
 
     void IRLoad::_generate()
     {
+        if_new_var = true;
+        new_var_name = Var;
+        IRType = MC::IR::IROp::Load;
         dst = "    ";
         dst += Var + " = load " + Ptr;
     }
 
     void IRGlobalVar::_generate()
     {
+        if_new_var = true;
+        new_var_name = Var;
+        IRType = MC::IR::IROp::GlobalVar;
         dst = "global ";
         dst += Var + " = alloc " + getVarTypeStr(AllocType) + ", " + InitList;
     }
 
     void IRArrayDef::_generate()
     {
+        if_new_var = true;
+        new_var_name = Var;
+        IRType = MC::IR::IROp::ArrayDef;
         dst = "    ";
         dst += Var + " = alloc ";
         VarType type = MC::IR::VarType::Val;
@@ -202,6 +239,9 @@ namespace MC::IR
 
     void IRGlobalArray::_generate()
     {
+        if_new_var = true;
+        new_var_name = Var;
+        IRType = MC::IR::IROp::GlobalArray;
         dst = "global ";
         dst += Var + " = alloc ";
         VarType type = MC::IR::VarType::Val;
@@ -215,6 +255,7 @@ namespace MC::IR
 
     void IRVoid::_generate()
     {
+        IRType = MC::IR::IROp::Void;
         dst = "";
     }
 

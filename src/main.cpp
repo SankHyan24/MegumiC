@@ -3,7 +3,6 @@
 #include <iostream>
 #include <memory>
 #include <string>
-#include <koopa.h>
 
 #include <config.hpp>
 #include <ast/ast.hpp>
@@ -29,8 +28,9 @@ int main(int argc, const char *argv[])
 
 	// generate assembly here
 	auto assembly = MC::ASM::generate(ir);
+	assembly->Dump();
 
-	std::cout << "done" << MC::ASM::add(1, 2) << std::endl;
+	std::cout << "done" << std::endl;
 
 	return 0;
 }
