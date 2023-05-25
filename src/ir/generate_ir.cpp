@@ -467,6 +467,8 @@ namespace MC::AST::node
             ir.push_back(std::unique_ptr<MC::IR::IRRet>());
             ir.back().reset(new MC::IR::IRRet("0"));
         }
+        ir.push_back(std::unique_ptr<MC::IR::IRVoid>());
+        ir.back().reset(new MC::IR::IRVoid());
 
         ir.push_back(std::unique_ptr<MC::IR::IRFuncDefEnd>());
         ir.back().reset(new MC::IR::IRFuncDefEnd());
@@ -504,15 +506,21 @@ namespace MC::AST::node
         ir.push_back(std::unique_ptr<MC::IR::IRBranch>());
         ir.back().reset(new MC::IR::IRBranch(condition_name, if_label, else_label));
         // ifthen block
+        ir.push_back(std::unique_ptr<MC::IR::IRVoid>());
+        ir.back().reset(new MC::IR::IRVoid());
         ir.push_back(std::unique_ptr<MC::IR::IRLabel>());
         ir.back().reset(new MC::IR::IRLabel(if_label));
         this->if_statement->generate_ir(ctx, ir);
         ir.push_back(std::unique_ptr<MC::IR::IRJump>());
         ir.back().reset(new MC::IR::IRJump(ifelse_end));
         // else block
+        ir.push_back(std::unique_ptr<MC::IR::IRVoid>());
+        ir.back().reset(new MC::IR::IRVoid());
         ir.push_back(std::unique_ptr<MC::IR::IRLabel>());
         ir.back().reset(new MC::IR::IRLabel(else_label));
         this->else_statement->generate_ir(ctx, ir);
+        ir.push_back(std::unique_ptr<MC::IR::IRVoid>());
+        ir.back().reset(new MC::IR::IRVoid());
         ir.push_back(std::unique_ptr<MC::IR::IRLabel>());
         ir.back().reset(new MC::IR::IRLabel(ifelse_end));
     }
@@ -536,6 +544,8 @@ namespace MC::AST::node
         ctx.add_loop_label(while_end);
 
         // label
+        ir.push_back(std::unique_ptr<MC::IR::IRVoid>());
+        ir.back().reset(new MC::IR::IRVoid());
         ir.push_back(std::unique_ptr<MC::IR::IRLabel>());
         ir.back().reset(new MC::IR::IRLabel(while_start));
         // condition
@@ -545,6 +555,8 @@ namespace MC::AST::node
         ir.push_back(std::unique_ptr<MC::IR::IRBranch>());
         ir.back().reset(new MC::IR::IRBranch(condition_name, while_loop_body, while_end));
         // while_loop_body
+        ir.push_back(std::unique_ptr<MC::IR::IRVoid>());
+        ir.back().reset(new MC::IR::IRVoid());
         ir.push_back(std::unique_ptr<MC::IR::IRLabel>());
         ir.back().reset(new MC::IR::IRLabel(while_loop_body));
         this->stmt->generate_ir(ctx, ir);
@@ -552,6 +564,8 @@ namespace MC::AST::node
         ir.push_back(std::unique_ptr<MC::IR::IRJump>());
         ir.back().reset(new MC::IR::IRJump(while_start));
         // while_end
+        ir.push_back(std::unique_ptr<MC::IR::IRVoid>());
+        ir.back().reset(new MC::IR::IRVoid());
         ir.push_back(std::unique_ptr<MC::IR::IRLabel>());
         ir.back().reset(new MC::IR::IRLabel(while_end));
 
