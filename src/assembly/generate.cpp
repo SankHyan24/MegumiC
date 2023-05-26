@@ -1,4 +1,6 @@
 #include <assembly/generate.hpp>
+#include <assembly/irt.hpp>
+#include <ir/ir.hpp>
 
 namespace MC::ASM
 {

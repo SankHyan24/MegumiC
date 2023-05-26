@@ -35,6 +35,26 @@ namespace
         "&&",
         "||",
         "!"};
+    char irOPEngStr[19][20] = {
+        "FuncDef",
+        "FuncDefEnd",
+        "Label",
+        "Call",
+        "AssignBinOp",
+        "AssignUnaryOp",
+        "AssignImm",
+        "Jump",
+        "Branch",
+        "GetPtr",
+        "GetElementPtr",
+        "ArrayDef",
+        " Store",
+        "Load",
+        "Alloc",
+        "Ret",
+        "GlobalVar",
+        "GlobalArray",
+        "Void"};
 
     // mapping from VarType
     char varTypeStr[2][5] = {
@@ -50,6 +70,10 @@ namespace
 
 namespace MC::IR
 {
+    std::string IROp2String(IROp op)
+    {
+        return irOPEngStr[int(op)];
+    }
     std::ostream &operator<<(std::ostream &os, const BinOp &p)
     {
         os << binOpStr[int(p)];

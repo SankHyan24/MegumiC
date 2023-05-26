@@ -52,7 +52,8 @@ namespace MC::IR
     enum class VarType
     {
         Ptr,
-        Val
+        Val,
+        Void
     };
 
     class ArgPair
@@ -64,6 +65,7 @@ namespace MC::IR
     };
 
     // overload << operation of BinOp
+    std::string IROp2String(IROp op);
     std::ostream &operator<<(std::ostream &os, const BinOp &p);
 
     class IRcode
@@ -285,8 +287,10 @@ namespace MC::IR
         VarType AllocType;
         std::vector<int> Shape;
         std::string InitList;
-        IRGlobalArray(std::string Var, VarType AllocType, std::vector<int> Shape, std::string InitList)
-            : Var(Var), AllocType(AllocType), Shape(Shape), InitList(InitList) {}
+        // Only for ir tree
+        std::vector<int> initbuffer;
+        IRGlobalArray(std::string Var, VarType AllocType, std::vector<int> Shape, std::string InitList, std::vector<int> initbuffer)
+            : Var(Var), AllocType(AllocType), Shape(Shape), InitList(InitList), initbuffer(initbuffer) {}
 
     private:
         virtual void _generate() override;
