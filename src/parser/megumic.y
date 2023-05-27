@@ -143,7 +143,7 @@ FuncParamArray
 		((MC::AST::node::ArrayIdentifier*)($$->name.get()))->index_list.push_back(std::unique_ptr<MC::AST::node::Expression>());
 		((MC::AST::node::ArrayIdentifier*)($$->name.get()))->index_list.back().reset($3);
 	}
-	| FuncParamOne {
+	| FuncParamOne '['  ']'{
 		$$ = new MC::AST::node::FunctionDefineArg($1->type.get(), new MC::AST::node::ArrayIdentifier($1->name->name));
 	}
 
