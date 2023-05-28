@@ -2,6 +2,8 @@ build/
 .vscode/
 *.mc
 *back_main*
+*target.s
+*target.ir
 
 
 # Prerequisites

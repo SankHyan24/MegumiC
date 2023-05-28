@@ -30,8 +30,14 @@ namespace MC::config
         std::string inputFile;
         std::string irOutputFile;
         std::string targetOutputFile;
+
         Config(int argc, const char *argv[]);
+        ~Config();
+        std::ostream &getTargetOutputFileStream();
+        std::ostream &getirOutputFileStream();
 
     private:
+        std::ofstream targetOutputFileStream;
+        std::ofstream irOutputFileStream;
     };
 }

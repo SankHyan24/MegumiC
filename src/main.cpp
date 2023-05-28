@@ -24,10 +24,12 @@ int main(int argc, const char *argv[])
 
 	// generate ir here
 	auto ir = MC::IR::generate(ast);
+	ir->Dump(config.getirOutputFileStream());
 	ir->Dump();
 
 	// generate assembly here
 	auto assembly = MC::ASM::generate(ir);
+	assembly->Dump(config.getTargetOutputFileStream());
 	assembly->Dump();
 
 	std::cout << "done" << std::endl;

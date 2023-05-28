@@ -19,6 +19,7 @@ namespace MC::ASM
     public:
         IRArgType type;
         std::string varName;
+        IRArgPair(IRArgType type, std::string varName) : type(type), varName(varName) {}
     };
 
     // IR tree is the irtree constructed from the ircode,
@@ -36,6 +37,7 @@ namespace MC::ASM
     class IRTInst : public IRTree
     {
     public:
+        std::string ircode_dst;
         MC::IR::IROp tag;
         std::string opname1, opname2, opname3;
         int imm;
@@ -47,6 +49,8 @@ namespace MC::ASM
 
         // if use opname, is 2op or 3op
         bool is_2_op{false};
+        bool is_number{false};
+
         bool is_imm{false};
         bool is_branch{false};
         bool is_jump{false};
@@ -54,8 +58,13 @@ namespace MC::ASM
         bool is_getelementptr{false};
         bool is_load{false};
         bool is_store{false};
+        bool is_store_imm{false};
         bool is_ret{false};
         bool is_global{false};
+
+        // for getelementptr
+        int getelementptrLvl;
+        int getelementptrType;
 
         // function call
         bool is_call{false};
@@ -67,6 +76,9 @@ namespace MC::ASM
         std::vector<int> array_init_buffer;
         int count_need_stack_byte(Context &ctx);
         std::string getNewVarName() { return opname1; }
+
+        // line:
+        int line;
 
     private:
         virtual void _generateLV0(Context &ctx, std::ostream &out) override;
@@ -91,7 +103,7 @@ namespace MC::ASM
     public:
         IRArgType retType;
         std::string functionName;
-        // std::vector<IRArgPair> argList;
+        std::vector<IRArgPair> argList;
         std::vector<std::unique_ptr<IRTBasicBlock>> bbList;
 
         int needStackByte{0};

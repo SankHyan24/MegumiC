@@ -5,8 +5,10 @@ namespace
 {
     inline std::string get_varname_from_str(std::string str)
     {
-        if (str.at(0) == '%' || str.at(0) == '@')
+        if (str.at(0) == '%')
             return "var_" + str.substr(1, str.size());
+        if (str.at(0) == '@') // args
+            return str.substr(1, str.size());
         else
             return str;
     }
@@ -19,6 +21,15 @@ namespace
             throw std::runtime_error("Error Label name: " + str + " should not start with @");
         else
             return str;
+    }
+
+    inline bool if_number(std::string str)
+    {
+        if (str.at(0) == '%')
+            return false;
+        if (str.at(0) == '@')
+            return false;
+        return true;
     }
 }
 
@@ -34,11 +45,12 @@ namespace MC::ASM
         Context ctx;
         this->irt->generate(ctx, out);
 
-        std::cout << this->buffer.str() << std::endl;
+        // std::cout << this->buffer.str() << std::endl;
     }
 
-    void AssemblyList::Dump()
+    void AssemblyList::Dump(std::ostream &out)
     {
+        out << this->buffer.str();
     }
 
     void AssemblyList::generateIRTreeFromIRCodeList()
@@ -78,7 +90,17 @@ namespace MC::ASM
         irt_->retType = (fundef_ir_code->retType == MC::IR::VarType::Ptr) ? MC::ASM::IRArgType::I32Star : MC::ASM::IRArgType::I32;
         irt_->functionName = fundef_ir_code->funcName.substr(1, fundef_ir_code->funcName.size());
 
-        // irt_->argList.push_back (no need)
+        for (auto &i : fundef_ir_code->args)
+        {
+            MC::ASM::IRArgType argType;
+            std::string argName;
+            if (i.type == MC::IR::VarType::Ptr)
+                argType = MC::ASM::IRArgType::I32Star;
+            else
+                argType = MC::ASM::IRArgType::I32;
+            argName = get_varname_from_str(i.name);
+            irt_->argList.push_back(IRArgPair(argType, argName));
+        }
         codeindex += 1;
         if (ir_code_list->at(codeindex)->IRType != MC::IR::IROp::Label)
             throw std::runtime_error("Impossible Scenario: function bb head not a lable");
@@ -148,12 +170,16 @@ namespace MC::ASM
         if (ir_code->if_new_var)
             irt_->is_new_var = true;
         irt_->tag = type;
+        irt_->line = codeindex;
+        irt_->ircode_dst = ir_code->dst;
         switch (type)
         {
         case MC::IR::IROp::Call:
         {
             auto this_ir = dynamic_cast<MC::IR::IRCall *>(ir_code.get());
             irt_->is_call = true;
+            irt_->opname1 = get_varname_from_str(this_ir->Var);
+            irt_->opname2 = get_varname_from_str(this_ir->FuncName);
             for (auto &i : this_ir->Args)
                 irt_->params_name.push_back(get_varname_from_str(i));
             break;
@@ -173,6 +199,7 @@ namespace MC::ASM
         {
             auto this_ir = dynamic_cast<MC::IR::IRAssignUnaryOp *>(ir_code.get());
             irt_->is_2_op = true;
+            // irt_
             irt_->opcode = this_ir->op;
             irt_->opname1 = get_varname_from_str(this_ir->Var);
             irt_->opname2 = get_varname_from_str(this_ir->RHS);
@@ -207,9 +234,16 @@ namespace MC::ASM
         {
             auto this_ir = dynamic_cast<MC::IR::IRGetPtr *>(ir_code.get());
             irt_->is_getptr = true;
-            irt_->opname1 = get_varname_from_str(this_ir->Var);
-            irt_->opname2 = get_varname_from_str(this_ir->Ptr);
+            irt_->is_store_imm = if_number(this_ir->Index);
+            irt_->opname1 = get_varname_from_str(this_ir->Ptr);
+            irt_->opname2 = get_varname_from_str(this_ir->Var);
             irt_->opname3 = get_varname_from_str(this_ir->Index);
+
+            if (irt_->is_store_imm) // store 0,%1
+            {
+                irt_->imm = std::stoi(this_ir->Index);
+                irt_->opname3 = "imm_" + std::to_string(irt_->imm);
+            }
 
             break;
         }
@@ -217,10 +251,18 @@ namespace MC::ASM
         {
             auto this_ir = dynamic_cast<MC::IR::IRGetElementPtr *>(ir_code.get());
             irt_->is_getelementptr = true;
-            irt_->opname1 = get_varname_from_str(this_ir->Arr);
-            irt_->opname2 = get_varname_from_str(this_ir->Ptr);
-            irt_->opname3 = get_varname_from_str(this_ir->Ind);
+            irt_->getelementptrLvl = this_ir->Lvl;
+            irt_->getelementptrType = this_ir->IRGetElementPtrType;
 
+            irt_->is_store_imm = if_number(this_ir->Ind);
+            irt_->opname1 = get_varname_from_str(this_ir->Ptr);
+            irt_->opname2 = get_varname_from_str(this_ir->Arr);
+            irt_->opname3 = get_varname_from_str(this_ir->Ind);
+            if (irt_->is_store_imm) // store 0,%1
+            {
+                irt_->imm = std::stoi(this_ir->Ind);
+                irt_->opname3 = "imm_" + std::to_string(irt_->imm);
+            }
             break;
         }
         case MC::IR::IROp::ArrayDef:
@@ -236,7 +278,13 @@ namespace MC::ASM
         {
             auto this_ir = dynamic_cast<MC::IR::IRStore *>(ir_code.get());
             irt_->is_store = true;
+            irt_->is_store_imm = if_number(this_ir->Value);
             irt_->opname1 = get_varname_from_str(this_ir->Value);
+            if (irt_->is_store_imm) // store 0,%1
+            {
+                irt_->imm = std::stoi(this_ir->Value);
+                irt_->opname1 = "imm_" + std::to_string(irt_->imm);
+            }
             irt_->opname2 = get_varname_from_str(this_ir->AddressOfTarget);
             break;
         }

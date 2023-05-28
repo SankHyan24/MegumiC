@@ -67,6 +67,8 @@ namespace MC::IR
     // overload << operation of BinOp
     std::string IROp2String(IROp op);
     std::ostream &operator<<(std::ostream &os, const BinOp &p);
+    std::string BinOp2EngString(BinOp op);
+    std::string BinOp2RV32String(BinOp op);
 
     class IRcode
     {
@@ -221,10 +223,18 @@ namespace MC::IR
     class IRGetElementPtr : public IRcode
     {
     public:
+        int IRGetElementPtrType;
+        // 0是一个针对全局数组的操作
+        // 是一个针对局部数组的操作
+        // 1并不是第一层了
+        int Lvl;
+        // 层数，shape几层它几层
+        // 最少1层
         std::string Ptr;
         std::string Arr;
         std::string Ind;
-        IRGetElementPtr(std::string Ptr, std::string Arr, std::string Ind) : Ptr(Ptr), Arr(Arr), Ind(Ind) {}
+        IRGetElementPtr(std::string Ptr, std::string Arr, std::string Ind, int IRGetElementPtrType, int Lvl)
+            : Ptr(Ptr), Arr(Arr), Ind(Ind), IRGetElementPtrType(IRGetElementPtrType), Lvl(Lvl) {}
 
     private:
         virtual void _generate() override;
@@ -311,6 +321,7 @@ namespace MC::IR
     {
     public:
         std::unique_ptr<IRList> irList;
+        bool print_ir_line_number{true};
         IRListWrapper() : irList(std::make_unique<IRList>()) {}
         void Generate();
         void Dump();

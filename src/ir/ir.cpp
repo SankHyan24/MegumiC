@@ -61,6 +61,22 @@ namespace
         "*i32",
         "i32"};
 
+    char binOpRV32Str[21][5] = {
+        "add",
+        "sub",
+        "mul",
+        "div",
+        "rem",
+        "sle",
+        "sge",
+        "slt",
+        "sgt",
+        "seq",
+        "sne",
+        "and",
+        "or",
+        "not"};
+
     std::string getVarTypeStr(MC::IR::VarType type)
     {
         return varTypeStr[int(type)];
@@ -88,6 +104,11 @@ namespace MC::IR
     std::string BinOp2EngString(BinOp op)
     {
         return binOpEngStr[int(op)];
+    }
+
+    std::string BinOp2RV32String(BinOp op)
+    {
+        return binOpRV32Str[int(op)];
     }
 
     void IRcode::generate()
@@ -219,6 +240,10 @@ namespace MC::IR
         IRType = MC::IR::IROp::GetElementPtr;
         dst = "    ";
         dst += Ptr + " = getelemptr " + Arr + ", " + Ind;
+        dst += " // ";
+        dst += "类型：";
+        dst += ((IRGetElementPtrType == 0) ? "第一次" : "多次的");
+        dst += " 层数: " + std::to_string(Lvl);
     }
 
     void IRStore::_generate()
@@ -286,14 +311,21 @@ namespace MC::IR
     void IRListWrapper::Generate()
     {
         for (auto &i : *irList)
+        {
             i->generate();
+        }
     }
 
     std::string IRListWrapper::toString()
     {
         std::string ret;
-        for (auto &i : *irList)
-            ret += i->dump();
+        if (this->print_ir_line_number)
+            for (int i = 0; i < irList->size(); i++)
+                ret += "[" + std::to_string(i) + "]\t" + (*irList)[i]->dump();
+        else
+            for (auto &i : *irList)
+                ret += i->dump();
+
         return ret;
     }
 

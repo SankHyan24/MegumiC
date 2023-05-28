@@ -88,7 +88,7 @@ namespace
         return str;
     }
 
-    void initZero_to_ir(std::string ir_value_id, int index, std::vector<int> shape, MC::IR::Context &ctx, MC::IR::IRList &ir)
+    void initZero_to_ir(std::string ir_value_id, int index, std::vector<int> shape, MC::IR::Context &ctx, MC::IR::IRList &ir, bool first_call)
     {
         std::vector<int> shape_;
         for (int i = 1; i < shape.size(); i++)
@@ -102,12 +102,12 @@ namespace
         for (int i = 0; i < shape[0]; i++)
         {
             ir.push_back(std::unique_ptr<MC::IR::IRGetElementPtr>());
-            ir.back().reset(new MC::IR::IRGetElementPtr(ir_value_id + '.' + std::to_string(i), ir_value_id, std::to_string(i)));
-            initZero_to_ir(ir_value_id + "." + std::to_string(i), i, shape_, ctx, ir);
+            ir.back().reset(new MC::IR::IRGetElementPtr(ir_value_id + '.' + std::to_string(i), ir_value_id, std::to_string(i), first_call ? 0 : 1, shape.size()));
+            initZero_to_ir(ir_value_id + "." + std::to_string(i), i, shape_, ctx, ir, false);
         }
     }
 
-    void initValue_to_ir(std::string ir_value_id, int index, MC::AST::node::Expression *exp, std::vector<int> shape, MC::IR::Context &ctx, MC::IR::IRList &ir)
+    void initValue_to_ir(std::string ir_value_id, int index, MC::AST::node::Expression *exp, std::vector<int> shape, MC::IR::Context &ctx, MC::IR::IRList &ir, bool first_call)
     {
         auto initValue = dynamic_cast<MC::AST::node::ArrayDeclareInitValue *>(exp);
         std::vector<int> shape_;
@@ -120,11 +120,11 @@ namespace
             for (int i = 0; i < shape[0]; i++)
             {
                 ir.push_back(std::unique_ptr<MC::IR::IRGetElementPtr>());
-                ir.back().reset(new MC::IR::IRGetElementPtr(ir_value_id + '.' + std::to_string(i), ir_value_id, std::to_string(i)));
+                ir.back().reset(new MC::IR::IRGetElementPtr(ir_value_id + '.' + std::to_string(i), ir_value_id, std::to_string(i), first_call ? 0 : 1, shape.size()));
                 if (i >= initValue->value_list.size())
-                    initZero_to_ir(ir_value_id + "." + std::to_string(i), i, shape_, ctx, ir);
+                    initZero_to_ir(ir_value_id + "." + std::to_string(i), i, shape_, ctx, ir, false);
                 else
-                    initValue_to_ir(ir_value_id + "." + std::to_string(i), i, initValue->value_list.at(i).get(), shape_, ctx, ir);
+                    initValue_to_ir(ir_value_id + "." + std::to_string(i), i, initValue->value_list.at(i).get(), shape_, ctx, ir, false);
             }
         }
         else
@@ -180,8 +180,9 @@ namespace MC::AST::node
             std::string ir_name_ptr = varinfo.name;
             if (varinfo.is_array)
             {
+                auto &shape = varinfo.shape;
                 ir.push_back(std::unique_ptr<MC::IR::IRGetElementPtr>());
-                ir.back().reset(new MC::IR::IRGetElementPtr(ir_name_val, ir_name_ptr, "0"));
+                ir.back().reset(new MC::IR::IRGetElementPtr(ir_name_val, ir_name_ptr, "0", 0, shape.size()));
             }
             else if (varinfo.type == MC::IR::VarType::Ptr)
             {
@@ -215,15 +216,15 @@ namespace MC::AST::node
             std::vector<int> shape = varinfo.shape;
             int index_size = this->index_list.size();
 
-            if (shape.size() != index_size)
-                throw std::runtime_error("Index number is not match.");
+            // if (shape.size() != index_size)
+            //     throw std::runtime_error("Index number is not match.");
 
-            int ptr_id = ctx.get_id();
-            std::string ptr_name = "%" + std::to_string(ptr_id);
+            // int ptr_id = ctx.get_id();
+            // std::string ptr_name = "%" + std::to_string(ptr_id);
 
-            ir.push_back(std::unique_ptr<MC::IR::IRLoad>());
-            ir.back().reset(new MC::IR::IRLoad(ir_name_ptr, ptr_name));
-            ir_name_ptr = ptr_name;
+            // ir.push_back(std::unique_ptr<MC::IR::IRLoad>());
+            // ir.back().reset(new MC::IR::IRLoad(ir_name_ptr, ptr_name));
+            // ir_name_ptr = ptr_name;
             for (int i = 0; i < shape.size(); i++)
             {
 
@@ -239,7 +240,7 @@ namespace MC::AST::node
                 else
                 {
                     ir.push_back(std::unique_ptr<MC::IR::IRGetElementPtr>());
-                    ir.back().reset(new MC::IR::IRGetElementPtr(ptr_ir_name, ir_name_ptr, exp_ir_name));
+                    ir.back().reset(new MC::IR::IRGetElementPtr(ptr_ir_name, ir_name_ptr, exp_ir_name, i == 0 ? 0 : 1, shape.size() - i));
                 }
                 ir_name_ptr = ptr_ir_name;
             }
@@ -267,8 +268,8 @@ namespace MC::AST::node
 
             std::vector<int> shape = varinfo.shape;
             int index_size = arrayIdentifier->index_list.size();
-            if (index_size != shape.size())
-                throw std::runtime_error("Index number is not match.");
+            // if (index_size != shape.size())
+            //     throw std::runtime_error("Index number is not match.");
 
             for (int i = 0; i < shape.size(); i++)
             {
@@ -277,7 +278,7 @@ namespace MC::AST::node
                 int index_name = ctx.get_id();
                 std::string ptr_ir_name = ir_name + "._" + std::to_string(index_name) + "_";
                 ir.push_back(std::unique_ptr<MC::IR::IRGetElementPtr>());
-                ir.back().reset(new MC::IR::IRGetElementPtr(ptr_ir_name, ir_name, exp_ir_name));
+                ir.back().reset(new MC::IR::IRGetElementPtr(ptr_ir_name, ir_name, exp_ir_name, i == 0 ? 0 : 1, shape.size() - i));
                 ir_name = ptr_ir_name;
             }
 
@@ -378,7 +379,13 @@ namespace MC::AST::node
             std::string ir_name = "@" + this->name->name;
             std::vector<int> shape = get_shape(this->name.get());
             ir.push_back(std::unique_ptr<MC::IR::IRGlobalArray>());
-            ir.back().reset(new MC::IR::IRGlobalArray(ir_name, this->type, shape, "zeroinit", {}));
+            int array_size = 1;
+            for (auto i : shape)
+                array_size *= i;
+            std::vector<int> init_buffer;
+            for (int i = 0; i < array_size; i++)
+                init_buffer.push_back(0);
+            ir.back().reset(new MC::IR::IRGlobalArray(ir_name, this->type, shape, "zeroinit", init_buffer));
             ctx.insert_symbol(this->name->name, VarInfo(ir_name, MC::IR::VarType::Val, true, shape));
         }
         else
@@ -395,7 +402,7 @@ namespace MC::AST::node
     {
         if (ctx.is_global())
         {
-            std::string ir_name = "@" + std::to_string(ctx.get_id());
+            std::string ir_name = "@" + this->name->name;
             std::vector<int> shape = get_shape(this->name.get());
             std::vector<int> init_buffer;
             std::string init_value_string = initValue_to_string(this->init_value.get(), shape, init_buffer);
@@ -411,7 +418,7 @@ namespace MC::AST::node
             ir.push_back(std::unique_ptr<MC::IR::IRArrayDef>());
             ir.back().reset(new MC::IR::IRArrayDef(ir_name, this->type, shape));
             ctx.insert_symbol(this->name->name, VarInfo(ir_name, MC::IR::VarType::Val, true, shape));
-            initValue_to_ir(ir_name, 0, this->init_value.get(), shape, ctx, ir);
+            initValue_to_ir(ir_name, 0, this->init_value.get(), shape, ctx, ir, true);
         }
     }
 
@@ -471,8 +478,10 @@ namespace MC::AST::node
 
         if (!dynamic_cast<MC::IR::IRRet *>(ir.back().get()))
         {
-            ir.push_back(std::unique_ptr<MC::IR::IRRet>());
-            ir.back().reset(new MC::IR::IRRet("0"));
+            auto number0 = new NumberAST(0);
+            auto retStmt = new ReturnStatement(number0);
+            retStmt->generate_ir(ctx, ir);
+            delete retStmt;
         }
         ir.push_back(std::unique_ptr<MC::IR::IRVoid>());
         ir.back().reset(new MC::IR::IRVoid());

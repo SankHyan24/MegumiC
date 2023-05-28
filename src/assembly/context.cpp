@@ -44,11 +44,40 @@ namespace MC::ASM
             throw std::runtime_error("invalid register");
         this->mask.reset(x);
     }
+    void Context::insert_function_need_stack(std::string name, int stack_size)
+    {
+        this->function_need_stack.insert({name, stack_size});
+    }
+    int Context::find_function_need_stack(std::string name)
+    {
+        auto it = this->function_need_stack.find(name);
+        if (it == this->function_need_stack.end())
+            throw std::runtime_error("function[" + name + "] not found in function_need_stack table!");
+        return it->second;
+    }
 
     void Context::insert_symbol(std::string name, Address value)
     {
         this->var_table.back().insert({name, value});
     }
+
+    void Context::insert_type(std::string name, MC::IR::IROp type)
+    {
+        this->var_type.insert({name, type});
+    }
+
+    void Context::insert_global(std::string name, std::vector<int> value)
+    {
+        this->global_table.insert({name, value});
+    }
+    MC::IR::IROp Context::find_type(std::string name)
+    {
+        auto it = this->var_type.find(name);
+        if (it == this->var_type.end())
+            throw std::runtime_error("type[" + name + "] not found in var type table!");
+        return it->second;
+    }
+
     Address &Context::find_symbol_last_table(std::string name)
     {
         if (this->var_table.empty())
@@ -57,7 +86,56 @@ namespace MC::ASM
 
         auto it = table.find(name);
         if (it == table.end())
-            throw std::runtime_error("symbol not found");
+        {
+            std::cout << "var table:" << std::endl;
+            for (auto &table : this->var_table)
+            {
+                for (auto &p : table)
+                {
+                    std::cout << p.first << " : " << p.second.get_offset() << std::endl;
+                }
+            }
+            throw std::runtime_error("symbol[" + name + "] not found in var table table!");
+        }
+        return it->second;
+    }
+    bool Context::if_in_symbol_table(std::string name)
+    {
+        for (auto &table : this->var_table)
+        {
+            auto it = table.find(name);
+            if (it != table.end())
+                return true;
+        }
+        return false;
+    }
+    std::vector<int> &Context::find_global(std::string name)
+    {
+        auto it = this->global_table.find(name);
+        if (it == this->global_table.end())
+        {
+            // print the global table and var table
+            {
+                std::cout << "global table:" << std::endl;
+                for (auto &p : this->global_table)
+                {
+                    std::cout << p.first << " : ";
+                    for (auto &v : p.second)
+                        std::cout << v << " ";
+                    std::cout << std::endl;
+                }
+                std::cout << std::endl;
+                std::cout << "var table:" << std::endl;
+                for (auto &table : this->var_table)
+                {
+                    for (auto &p : table)
+                    {
+                        std::cout << p.first << " : " << p.second.get_offset() << std::endl;
+                    }
+                }
+            }
+            throw std::runtime_error("symbol[" + name + "] not found in var table and global table!");
+        }
         return it->second;
     }
 
@@ -84,6 +162,7 @@ namespace MC::ASM
             throw std::runtime_error("stack overflow");
         int ret = ptr;
         ptr += byteSize;
+        std::cout << "allocate address:" << ret << std::endl;
         return Address(ret);
     }
 }

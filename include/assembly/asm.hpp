@@ -26,7 +26,7 @@ namespace MC::ASM
         AssemblyList(std::unique_ptr<MC::IR::IRListWrapper> &irs);
         void Generate();
         void generateIRTreeFromIRCodeList();
-        void Dump();
+        void Dump(std::ostream &out = std::cout);
 
     private:
         IRTFunction *_IRT_generate_function(int &codeindex);

@@ -5,6 +5,7 @@
 #include <vector>
 #include <iostream>
 #include <bitset>
+#include <ir/ir.hpp>
 
 // #include <assembly/asm.hpp>
 
@@ -32,9 +33,11 @@ namespace MC::ASM
     class Address
     {
     public:
-        int sp_offset;
         Address(int offset = 0) : sp_offset(offset) {}
         int get_offset() const { return sp_offset; }
+
+    private:
+        int sp_offset;
     };
     class Context
     {
@@ -42,6 +45,10 @@ namespace MC::ASM
         static constexpr int reg_count = 12;
         std::ostream &log_out;
         std::vector<std::unordered_map<std::string, Address>> var_table{{}}; // use this structure means that may we can define function in a function
+        std::unordered_map<std::string, MC::IR::IROp> var_type{{}};          // use this structure means that may we can define function in a function
+        std::unordered_map<std::string, std::vector<int>> global_table{{}};  // use this structure means that may we can define function in a function
+        std::unordered_map<std::string, int> function_need_stack{{}};        // use this structure means that may we can define function in a function
+        int this_function_stack_size{0};
         Context(std::ostream &out = std::cout) : log_out(out)
         {
             var_table.clear();
@@ -52,12 +59,23 @@ namespace MC::ASM
             for (int i = 10; i <= 17; i++)
                 regs_to_be_protected.back().add_reg(i);
         }
+        void insert_function_need_stack(std::string name, int stack_size);
+        int find_function_need_stack(std::string name);
 
         void insert_symbol(std::string name, Address value);
+        void insert_type(std::string name, MC::IR::IROp type);
         Address &find_symbol_last_table(std::string name);
+        bool if_in_symbol_table(std::string name);
+        MC::IR::IROp find_type(std::string name);
+
+        void insert_global(std::string name, std::vector<int>);
+        std::vector<int> &find_global(std::string name);
+
         void create_scope(int stack_size);
         void end_scope();
+
         Address allocate_address(int size);
+
         RV32RegBitMask &getBackBitMask() { return regs_to_be_protected.back(); }
 
     private:
