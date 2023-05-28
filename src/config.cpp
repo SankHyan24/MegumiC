@@ -4,7 +4,7 @@ namespace MC::config
 
     Config::Config(int argc, const char *argv[])
     {
-        inputFile = "../test/hello.mc";
+        inputFile = "../test/task4.c";
         irOutputFile = "../zriscv/hello.ir";
         targetOutputFile = "../zriscv/target.s";
         irOutputFileStream.open(irOutputFile);

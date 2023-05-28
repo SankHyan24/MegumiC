@@ -222,6 +222,7 @@ namespace MC::IR
         std::string Ptr;
         std::string Var;
         std::string Index;
+        MC::IR::VarType Get_Type;
         IRGetPtr(std::string Ptr, std::string Var, std::string Index = "") : Ptr(Ptr), Var(Var), Index(Index) {}
 
     private:
@@ -242,6 +243,7 @@ namespace MC::IR
         std::string Ptr;
         std::string Arr;
         std::string Ind;
+        MC::IR::VarType Get_Type;
         IRGetElementPtr(std::string Ptr, std::string Arr, std::string Ind, int IRGetElementPtrType, int Lvl, int this_lvl_shape)
             : Ptr(Ptr), Arr(Arr), Ind(Ind), IRGetElementPtrType(IRGetElementPtrType), Lvl(Lvl), this_lvl_shape(this_lvl_shape) {}
 

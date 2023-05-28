@@ -308,6 +308,7 @@ namespace MC::IR
         for (int i = Shape.size() - 1; i >= 0; i--)
             dst += ", " + std::to_string(Shape[i]) + "]";
         dst += ", " + InitList;
+        dst += " // init buffer size:" + std::to_string(initbuffer.size());
     }
 
     void IRVoid::_generate()

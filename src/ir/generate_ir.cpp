@@ -36,7 +36,10 @@ namespace
         for (int i = 1; i < shape.size(); i++)
             shape_.push_back(shape[i]);
         if (shape.size() == 0)
+        {
             return "0";
+            init_buffer.push_back(0);
+        }
         for (int i = 0; i < shape[0]; i++)
         {
             if (i == 0)
@@ -182,7 +185,12 @@ namespace MC::AST::node
             {
                 auto &shape = varinfo.shape;
                 ir.push_back(std::unique_ptr<MC::IR::IRGetElementPtr>());
-                ir.back().reset(new MC::IR::IRGetElementPtr(ir_name_val, ir_name_ptr, "0", 0, shape.size(), shape[0]));
+
+                if (varinfo.type == MC::IR::VarType::Ptr)
+                    ir.back().reset(new MC::IR::IRGetElementPtr(ir_name_val, ir_name_ptr, "0", 1, shape.size(), shape[0]));
+                else
+
+                    ir.back().reset(new MC::IR::IRGetElementPtr(ir_name_val, ir_name_ptr, "0", 0, shape.size(), shape[0]));
             }
             else if (varinfo.type == MC::IR::VarType::Ptr)
             {
@@ -247,6 +255,7 @@ namespace MC::AST::node
                     ir.back().reset(new MC::IR::IRLoad(ir_name_ptr, new_name));
                     ir.push_back(std::unique_ptr<MC::IR::IRGetPtr>());
                     auto tmp = new MC::IR::IRGetPtr(ptr_ir_name, new_name, exp_ir_name);
+                    tmp->this_lvl_shape = shape[0];
                     tmp->IRGetElementPtrType = 1;
                     tmp->Lvl = 1;
                     ir.back().reset(tmp);
@@ -278,8 +287,14 @@ namespace MC::AST::node
             auto arrayIdentifier = dynamic_cast<ArrayIdentifier *>(this->ident.get());
 
             auto &varinfo = ctx.find_symbol(this->ident->name);
+            bool if_shuzucanshu = false;
             if (!varinfo.is_array)
                 throw std::runtime_error("Can't assign to a variable.");
+            if (varinfo.type == MC::IR::VarType::Ptr)
+            {
+                // 数组参数 把第一个getelementptr的ptr类型置为直接取直而不是取地址（设置为alloc）
+                if_shuzucanshu = true;
+            }
             std::string ir_name = varinfo.name;
 
             std::vector<int> shape = varinfo.shape;
@@ -294,7 +309,10 @@ namespace MC::AST::node
                 int index_name = ctx.get_id();
                 std::string ptr_ir_name = ir_name + "._" + std::to_string(index_name) + "_";
                 ir.push_back(std::unique_ptr<MC::IR::IRGetElementPtr>());
-                ir.back().reset(new MC::IR::IRGetElementPtr(ptr_ir_name, ir_name, exp_ir_name, i == 0 ? 0 : 1, shape.size() - i, shape[i]));
+                if (if_shuzucanshu)
+                    ir.back().reset(new MC::IR::IRGetElementPtr(ptr_ir_name, ir_name, exp_ir_name, 1, shape.size() - i, shape[i]));
+                else
+                    ir.back().reset(new MC::IR::IRGetElementPtr(ptr_ir_name, ir_name, exp_ir_name, i == 0 ? 0 : 1, shape.size() - i, shape[i]));
                 ir_name = ptr_ir_name;
             }
 
@@ -462,6 +480,7 @@ namespace MC::AST::node
             if (arg_identifier)
             {
                 std::vector<int> shape = get_shape(arg_identifier);
+                std::cout << "###############shape is " << shape[0] << std::endl;
                 // TODO: add shape( no need because the ir cannot recongnize it)
                 std::string arg_name = "@arg" + std::to_string(arg_id);
                 args.push_back({MC::IR::VarType::Ptr, arg_name});

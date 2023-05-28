@@ -65,7 +65,7 @@ using namespace std;
 // 注意 IDENT 和 INT_CONST 会返回 token 的值, 分别对应 str_val 和 int_val
 %token <token> INT PTR RETURN CONST SEMICOLON COMMA FUNCTION WHILE IF ELSE BREAK CONTINUE
 %token <str_val>  AND_OP OR_OP IDENT
-%token <int_val> INT_CONST 
+%token <int_val> INT_CONST  CHAR_CONST
 %token <binop> LE_OP GE_OP EQ_OP NE_OP
 /* %left LE_OP GE_OP EQ_OP NE_OP */
 /* %type <str_val>  */
@@ -312,6 +312,7 @@ PrimaryExp
 
 Number
 	: INT_CONST {$$ = new MC::AST::node::NumberAST($1);};
+	| CHAR_CONST {$$ = new MC::AST::node::NumberAST($1);};
 
 UnaryExp
 	: PrimaryExp 

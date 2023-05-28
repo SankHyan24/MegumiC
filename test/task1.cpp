@@ -1,7 +1,7 @@
 
 
 const int maxn = 10010;
-int n, a[10010];
+int n, aa[10010];
 
 function int ReadInt()
 {
@@ -90,7 +90,7 @@ function int Quicksort(int a[10010], int Left, int Right)
 	int L = Left;
 	int R = Right;
 	int Pivot;
-	Pivot = Median3(a[0], L, R);
+	Pivot = Median3(a, L, R);
 	int i = Left;
 	int j = Right - 1;
 	while (1)
@@ -121,28 +121,50 @@ function int Quicksort(int a[10010], int Left, int Right)
 	temp = a[i];
 	a[i] = a[Right - 1];
 	a[Right - 1] = temp;
-	Quicksort(a[0], Left, i - 1);
-	Quicksort(a[0], i + 1, Right);
+	Quicksort(a, Left, i - 1);
+	Quicksort(a, i + 1, Right);
+	return 0;
+}
+
+function int swap(int a[10010], int i, int j)
+{
+	int tmp = a[i];
+	a[i] = a[j];
+	a[j] = tmp;
+	return a[j];
+}
+
+function int at(int a[10010], int i)
+{
+	return a[i];
+}
+
+function int PrintArr(int a[10010], int n)
+{
+	int i = 1;
+	while (i <= n)
+	{
+		PrintInt(a[i]);
+		i = i + 1;
+		putch(32);
+		if (i % 10 == 0)
+		{
+			putch(10);
+		}
+	}
 	return 0;
 }
 
 function int main()
 {
-	// freopen("./input/task1.1.in", "r", stdin);
 	n = ReadInt();
 	int i = 1;
 	while (i <= n)
 	{
-		a[i] = ReadInt();
+		aa[i] = ReadInt();
 		i = i + 1;
 	}
-	Quicksort(a[0], 1, n);
-	i = 1;
-	while (i <= n)
-	{
-		PrintInt(a[i]);
-		i = i + 1;
-		putch(10); // \n
-	}
+	Quicksort(aa, 1, n);
+	PrintArr(aa, n);
 	return 0;
 }

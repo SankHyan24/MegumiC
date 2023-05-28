@@ -479,7 +479,7 @@ namespace MC::ASM
             if (this->opname2[0] == 'z') // zero init
                 out << "\t.zero 4" << std::endl;
             else
-                out << "\t.word " << std::stoi(this->opname2) * 4 << std::endl;
+                out << "\t.word " << std::stoi(this->opname2) << std::endl;
             break;
         }
         case MC::IR::IROp::GlobalArray:

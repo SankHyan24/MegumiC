@@ -4,6 +4,7 @@ build/
 *back_main*
 *target.s
 *hello.ir
+*-linux-*
 
 
 # Prerequisites

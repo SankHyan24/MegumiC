@@ -31,6 +31,9 @@ Decimal       [1-9][0-9]*
 Octal         0[0-7]*
 Hexadecimal   0[xX][0-9a-fA-F]+
 
+/* 单个字符 */
+Char          '[^\\']'
+
 %%
 
 {WhiteSpace}    { /* 忽略, 不做任何操作 */ }
@@ -45,8 +48,8 @@ Hexadecimal   0[xX][0-9a-fA-F]+
 "if"            { return IF; }
 "else"          { return ELSE; }
 "break"         { return BREAK; }
-"continue"      { return CONTINUE;}
-
+"continue"      { return CONTINUE;}/*单个字符：*/
+{Char}         { yylval.int_val= yytext[1]; return CHAR_CONST; }
 
 
 "<="            { return LE_OP; }
