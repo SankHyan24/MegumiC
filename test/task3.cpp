@@ -1,14 +1,15 @@
-#pragma warning(disable : 4996)
-#include <stdio.h>
 
-int ReadLine(int s[]) {
+int ReadLine(int s[])
+{
     int ch = getchar();
-    if (ch <= 0) {
-        //printf("ch = %d\n", ch);
+    if (ch <= 0)
+    {
+        // printf("ch = %d\n", ch);
         return EOF;
     }
     int len = 0;
-    while (ch != '\n' && ch > 0) {
+    while (ch != 10 && ch > 0)
+    {
         s[len] = ch;
         ch = getchar();
         len = len + 1;
@@ -17,91 +18,108 @@ int ReadLine(int s[]) {
     return len;
 }
 
-void PrintLine(int s[]) {
+void PrintLine(int s[])
+{
     int i = 0;
-    while (s[i] != 0) {
+    while (s[i] != 0)
+    {
         putchar(s[i]);
         i = i + 1;
     }
-    putchar('\n');
+    putchar(10);
 }
 
-void PrintInt(int x) {
-    if (x < 0) {
+void PrintInt(int x)
+{
+    if (x < 0)
+    {
         putchar('-');
         x = -x;
     }
-    if (x >= 10) {
+    if (x >= 10)
+    {
         PrintInt(x / 10);
     }
     putchar(x % 10 + '0');
 }
 
-void Print1FDiv(int x, int y) {
+void Print1FDiv(int x, int y)
+{
     int ans = x * 100 / y;
     int Up = (ans + 5) / 100;
     int Down = (ans + 5) % 100;
-    //printf("x = %d, y = %d, ans = %d, Up = %d, Down = %d\n", x, y, ans, Up, Down);
+    // printf("x = %d, y = %d, ans = %d, Up = %d, Down = %d\n", x, y, ans, Up, Down);
 
-    if (Down >= 100) {
+    if (Down >= 100)
+    {
         Up = Up + 1;
         Down = Down - 100;
     }
 
-    // ÐèÒª½øÎ»
+    // ï¿½ï¿½Òªï¿½ï¿½Î»
     PrintInt(Up);
     putchar('.');
     putchar(Down / 10 + '0');
-    
 }
 
-//struct Course {
-//    int credit;      // Ñ§·Ö
-//    int need[8][8];  // Ç°ÖÃ¿Î³Ì
-//    int cnt;         // Ç°ÖÃ¿Î³ÌµÄÖÖÀàÊý
-//    int grade;       // µÃ·ÖµÈ¼¶, -1 ±íÊ¾Ã»ÓÐ¶Á¹ý
-//} a[110];
-int credit[110];        // Ñ§·Ö
-int need[110][8][8];  // Ç°ÖÃ¿Î³Ì
-int cnt[110];         // Ç°ÖÃ¿Î³ÌµÄÖÖÀàÊý
-int grade[110];       // µÃ·ÖµÈ¼¶, -1 ±íÊ¾Ã»ÓÐ¶Á¹ý
+// struct Course {
+//     int credit;      // Ñ§ï¿½ï¿½
+//     int need[8][8];  // Ç°ï¿½Ã¿Î³ï¿½
+//     int cnt;         // Ç°ï¿½Ã¿Î³Ìµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+//     int grade;       // ï¿½Ã·ÖµÈ¼ï¿½, -1 ï¿½ï¿½Ê¾Ã»ï¿½Ð¶ï¿½ï¿½ï¿½
+// } a[110];
+int credit[110];     // Ñ§ï¿½ï¿½
+int need[110][8][8]; // Ç°ï¿½Ã¿Î³ï¿½
+int cnt[110];        // Ç°ï¿½Ã¿Î³Ìµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+int grade[110];      // ï¿½Ã·ÖµÈ¼ï¿½, -1 ï¿½ï¿½Ê¾Ã»ï¿½Ð¶ï¿½ï¿½ï¿½
 int course[110][110];
-int course_cnt;  // hash±íµÄ³¤¶È
-int Insert(int s[]) {
+int course_cnt; // hashï¿½ï¿½ï¿½Ä³ï¿½ï¿½ï¿½
+int Insert(int s[])
+{
     int now = 0;
-    while (s[now] != 0) {
+    while (s[now] != 0)
+    {
         course[course_cnt][now] = s[now];
         now = now + 1;
     }
     course_cnt = course_cnt + 1;
     return course_cnt - 1;
 }
-int GetLen(int s[]) {
+int GetLen(int s[])
+{
     int len = 0;
-    while (s[len] != 0) {
+    while (s[len] != 0)
+    {
         len = len + 1;
     }
     return len;
 }
-int comp(int s1[], int s2[]) {
+int comp(int s1[], int s2[])
+{
     int len1 = GetLen(s1);
     int len2 = GetLen(s2);
-    if (len1 != len2) {
+    if (len1 != len2)
+    {
         return 0;
     }
     int i = 0;
-    while (i < len1) {
-        if (s1[i] != s2[i]) {
+    while (i < len1)
+    {
+        if (s1[i] != s2[i])
+        {
             return 0;
         }
         i = i + 1;
     }
     return 1;
 }
-int Find(int s[]) {
+int Find(int s[])
+{
     int i = 0;
-    while (i < course_cnt) {
-        if (comp(s, course[i])) {
+    while (i < course_cnt)
+    {
+        if (comp(s, course[i]))
+        {
             return i;
         }
         i = i + 1;
@@ -109,18 +127,21 @@ int Find(int s[]) {
     return Insert(s);
 }
 
-// °´ÕÕÊäÈëË³Ðò´æ´¢¿Î³Ì
+// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë³ï¿½ï¿½æ´¢ï¿½Î³ï¿½
 int course_input[110];
-// ½«µ±Ç°¿Î³ÌµÄÐÅÏ¢±£´æÏÂÀ´
-void Prework(int line[]) {
-    if (GetLen(line) == 0) {
+// ï¿½ï¿½ï¿½ï¿½Ç°ï¿½Î³Ìµï¿½ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+void Prework(int line[])
+{
+    if (GetLen(line) == 0)
+    {
         return;
     }
-    // ÕÒµ±Ç°¿Î³Ì µÚ1¸ö|Ö®Ç°
+    // ï¿½Òµï¿½Ç°ï¿½Î³ï¿½ ï¿½ï¿½1ï¿½ï¿½|Ö®Ç°
     int now[110] = {0};
     int tmp = 0;
     int i = 0;
-    while (line[i] != '|') {
+    while (line[i] != '|')
+    {
         now[0] = now[0] + 1;
         tmp = now[0];
         now[tmp] = line[i];
@@ -130,25 +151,27 @@ void Prework(int line[]) {
     now[0] = now[0] + 1;
     tmp = now[0];
     now[tmp] = 0;
-    i = i + 1; 
-
+    i = i + 1;
 
     int index = Find(now + 1);
     course_input[0] = course_input[0] + 1;
     tmp = course_input[0];
     course_input[tmp] = index;
 
-    // µ±Ç°¿Î³ÌµÄÑ§·Ö 1~2¸ö|Ö®¼ä
+    // ï¿½ï¿½Ç°ï¿½Î³Ìµï¿½Ñ§ï¿½ï¿½ 1~2ï¿½ï¿½|Ö®ï¿½ï¿½
     credit[index] = line[i] - '0';
     i = i + 2;
 
-    // µ±Ç°¿Î³ÌµÄÒÀÀµ¿Î³Ì 2~3¸ö|Ö®¼ä
-    while (line[i] != 0 && line[i] != '|') {
-        // Ò»×éÒÀÀµ¿Î³Ì
-        while (line[i] != 0 && line[i] != ';' && line[i] != '|') {
-            // Ò»ÃÅÒÀÀµ¿Î³Ì
+    // ï¿½ï¿½Ç°ï¿½Î³Ìµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î³ï¿½ 2~3ï¿½ï¿½|Ö®ï¿½ï¿½
+    while (line[i] != 0 && line[i] != '|')
+    {
+        // Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î³ï¿½
+        while (line[i] != 0 && line[i] != ';' && line[i] != '|')
+        {
+            // Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î³ï¿½
             now[0] = 0;
-            while (line[i] != 0 && line[i] != ',' && line[i] != ';' && line[i] != '|') {
+            while (line[i] != 0 && line[i] != ',' && line[i] != ';' && line[i] != '|')
+            {
                 now[0] = now[0] + 1;
                 tmp = now[0];
                 now[tmp] = line[i];
@@ -162,55 +185,73 @@ void Prework(int line[]) {
             need[index][count][0] = need[index][count][0] + 1;
             tmp = need[index][count][0];
             need[index][count][tmp] = Find(now + 1);
-            if (line[i] == ';' || line[i] == '|') break;
+            if (line[i] == ';' || line[i] == '|')
+                break;
             i = i + 1;
         }
         cnt[index] = cnt[index] + 1;
-        if (line[i] == '|') break;
+        if (line[i] == '|')
+            break;
         i = i + 1;
     }
-    if (line[i] != 0) i = i + 1;
+    if (line[i] != 0)
+        i = i + 1;
 
-    // µ±Ç°¿Î³ÌµÄµÃ·Ö
-    if (line[i] == 'A') {
+    // ï¿½ï¿½Ç°ï¿½Î³ÌµÄµÃ·ï¿½
+    if (line[i] == 'A')
+    {
         grade[index] = 4;
-    } else if (line[i] == 'B') {
+    }
+    else if (line[i] == 'B')
+    {
         grade[index] = 3;
-    } else if (line[i] == 'C') {
+    }
+    else if (line[i] == 'C')
+    {
         grade[index] = 2;
-    } else if (line[i] == 'D') {
+    }
+    else if (line[i] == 'D')
+    {
         grade[index] = 1;
-    } else if (line[i] == 'F') {
+    }
+    else if (line[i] == 'F')
+    {
         grade[index] = 0;
-    } else {
+    }
+    else
+    {
         grade[index] = -1;
     }
 }
 
-// Êä³öGPA
-void PrintGPA() {
-    //double sum_credit_f = 0, sum_grade_f = 0;
+// ï¿½ï¿½ï¿½GPA
+void PrintGPA()
+{
+    // double sum_credit_f = 0, sum_grade_f = 0;
     int sum_credit = 0;
     int sum_grade = 0;
     int i = 0;
-    while (i < course_cnt) {
-        if (grade[i] == -1) {
+    while (i < course_cnt)
+    {
+        if (grade[i] == -1)
+        {
             i = i + 1;
             continue;
         }
         sum_credit = sum_credit + credit[i];
-        //sum_credit_f += credit[i];
+        // sum_credit_f += credit[i];
         sum_grade = sum_grade + grade[i] * credit[i];
-        //sum_grade_f += grade[i] * credit[i];
+        // sum_grade_f += grade[i] * credit[i];
         i = i + 1;
     }
 
-   /* if (sum_credit == 0)
-        printf("GPA: 0.0\n");
-    else
-        printf("GPA: %.1f\n", sum_grade / sum_credit);*/
+    /* if (sum_credit == 0)
+         printf("GPA: 0.0\n");
+     else
+         printf("GPA: %.1f\n", sum_grade / sum_credit);*/
 
-    if (sum_credit == 0) {
+    if (sum_credit == 0)
+    {
         putchar('G');
         putchar('P');
         putchar('A');
@@ -219,24 +260,29 @@ void PrintGPA() {
         putchar('0');
         putchar('.');
         putchar('0');
-        putchar('\n');
-    } else {
+        putchar(10);
+    }
+    else
+    {
         putchar('G');
         putchar('P');
         putchar('A');
         putchar(':');
         putchar(' ');
         Print1FDiv(sum_grade, sum_credit);
-        putchar('\n');
+        putchar(10);
     }
 }
 
-// Êä³ö³¢ÊÔÑ§·Ö
-void PrintAttemped() {
+// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ§ï¿½ï¿½
+void PrintAttemped()
+{
     int sum_credit = 0;
-    int i = 0; 
-    while (i < course_cnt) {
-        if (grade[i] == -1) {
+    int i = 0;
+    while (i < course_cnt)
+    {
+        if (grade[i] == -1)
+        {
             i = i + 1;
             continue;
         }
@@ -261,16 +307,19 @@ void PrintAttemped() {
     putchar(':');
     putchar(' ');
     PrintInt(sum_credit);
-    putchar('\n');
-    //printf("Hours Attempted: %d\n", sum_credit);
+    putchar(10);
+    // printf("Hours Attempted: %d\n", sum_credit);
 }
 
-// Êä³öÒÑÐÞÑ§·Ö
-void PrintCompleted() {
+// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ§ï¿½ï¿½
+void PrintCompleted()
+{
     int sum_credit = 0;
-    int i = 0; 
-    while (i < course_cnt) {
-        if (grade[i] <= 0) {
+    int i = 0;
+    while (i < course_cnt)
+    {
+        if (grade[i] <= 0)
+        {
             i = i + 1;
             continue;
         }
@@ -295,17 +344,20 @@ void PrintCompleted() {
     putchar(':');
     putchar(' ');
     PrintInt(sum_credit);
-    putchar('\n');
-    //printf("Hours Completed: %d\n", sum_credit);
+    putchar(10);
+    // printf("Hours Completed: %d\n", sum_credit);
 }
 
-// Êä³öÊ£ÓàÑ§·Ö
+// ï¿½ï¿½ï¿½Ê£ï¿½ï¿½Ñ§ï¿½ï¿½
 int credit_remaining;
-void PrintRemaining() {
+void PrintRemaining()
+{
     int sum_credit = 0;
     int i = 0;
-    while (i < course_cnt) {
-        if (grade[i] > 0) {
+    while (i < course_cnt)
+    {
+        if (grade[i] > 0)
+        {
             i = i + 1;
             continue;
         }
@@ -333,49 +385,58 @@ void PrintRemaining() {
     putchar(':');
     putchar(' ');
     PrintInt(sum_credit);
-    putchar('\n');
-    //printf("Credits Remaining: %d\n", sum_credit);
+    putchar(10);
+    // printf("Credits Remaining: %d\n", sum_credit);
 }
 
-// ÅÐ¶ÏµÚindex¸ö¿Î³ÌÊÇ·ñÐèÒªÐÞ¶Á
-int NeedToLearn(int index) {
-    // ÒÑ¾­ÐÞ¶Á¹ý²¢ÇÒÃ»ÓÐ¹Ò¿Æ
-    if (grade[index] > 0) return 0;
+// ï¿½Ð¶Ïµï¿½indexï¿½ï¿½ï¿½Î³ï¿½ï¿½Ç·ï¿½ï¿½ï¿½Òªï¿½Þ¶ï¿½
+int NeedToLearn(int index)
+{
+    // ï¿½Ñ¾ï¿½ï¿½Þ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã»ï¿½Ð¹Ò¿ï¿½
+    if (grade[index] > 0)
+        return 0;
 
-    // Ã»ÓÐÇ°ÖÃ¿Î, ¿ÉÒÔÖ±½ÓÐÞ¶Á
-    if (cnt[index] == 0) return 1;
+    // Ã»ï¿½ï¿½Ç°ï¿½Ã¿ï¿½, ï¿½ï¿½ï¿½ï¿½Ö±ï¿½ï¿½ï¿½Þ¶ï¿½
+    if (cnt[index] == 0)
+        return 1;
 
-    // ÓÐÇ°ÖÃ¿Î, ÅÐ¶ÏÊÇ·ñÂú×ãÄ³Ò»×éÇ°ÖÃ¿ÎµÄÒªÇó
-    int i = 0; 
-    while (i < cnt[index]) {
-        // µÚi×éÇ°ÖÃ¿Î
+    // ï¿½ï¿½Ç°ï¿½Ã¿ï¿½, ï¿½Ð¶ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½Ä³Ò»ï¿½ï¿½Ç°ï¿½Ã¿Îµï¿½Òªï¿½ï¿½
+    int i = 0;
+    while (i < cnt[index])
+    {
+        // ï¿½ï¿½iï¿½ï¿½Ç°ï¿½Ã¿ï¿½
         int can_learn = 1;
-        int j = 1; 
-        while (j <= need[index][i][0]) {
+        int j = 1;
+        while (j <= need[index][i][0])
+        {
             int need_course = need[index][i][j];
-            if (grade[need_course] <= 0) can_learn = 0;
+            if (grade[need_course] <= 0)
+                can_learn = 0;
             j = j + 1;
         }
-        if (can_learn) return 1;
+        if (can_learn)
+            return 1;
         i = i + 1;
     }
     return 0;
 }
 
-int main() {
-     //freopen("./input/task3.1.in", "r", stdin);
+int main()
+{
+    // freopen("./input/task3.1.in", "r", stdin);
     int line[1000];
-    //while (scanf("%s", line) != EOF) {
-    while (ReadLine(line) != EOF) {
+    // while (scanf("%s", line) != EOF) {
+    while (ReadLine(line) != EOF)
+    {
         Prework(line);
-        //fprintf(stderr, "%s\n", line);
+        // fprintf(stderr, "%s\n", line);
     }
     PrintGPA();
     PrintAttemped();
     PrintCompleted();
     PrintRemaining();
-    
-    putchar('\n');
+
+    putchar(10);
     putchar('P');
     putchar('o');
     putchar('s');
@@ -405,19 +466,22 @@ int main() {
     putchar('e');
     putchar('x');
     putchar('t');
-    putchar('\n');
-    //printf("\nPossible Courses to Take Next\n");
+    putchar(10);
+    // printf("\nPossible Courses to Take Next\n");
     int i = 1;
-    while (i <= course_input[0]) {
+    while (i <= course_input[0])
+    {
         int index = course_input[i];
-        if (NeedToLearn(index)) {
+        if (NeedToLearn(index))
+        {
             putchar(' ');
             putchar(' ');
             PrintLine(course[index]);
         }
         i = i + 1;
     }
-    if (credit_remaining == 0) {
+    if (credit_remaining == 0)
+    {
         putchar(' ');
         putchar(' ');
         putchar('N');
@@ -443,8 +507,8 @@ int main() {
         putchar('n');
         putchar('s');
         putchar('!');
-        putchar('\n');
-        //printf("  None - Congratulations!\n");
+        putchar(10);
+        // printf("  None - Congratulations!\n");
     }
     return 0;
 }

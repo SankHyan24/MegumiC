@@ -6,37 +6,52 @@ int n, aa[10010];
 function int ReadInt()
 {
 	int ch = getch();
-	while ((ch > 57 || ch < 48) && ch != 45) // 9 0 -
+	while ((ch > '9' || ch < '0') && ch != '-')
 	{
 		ch = getch();
 	}
 	int ans = 0;
 	int flag = 1;
-	if (ch == 45)
+	if (ch == '-')
 	{
 		flag = -1;
 		ch = getch();
 	}
-	while (ch >= 48 && ch <= 57)
+	while (ch >= '0' && ch <= '9')
 	{
-		ans = ans * 10 + ch - 48;
+		ans = ans * 10 + ch - '0';
 		ch = getch();
 	}
 	return ans * flag;
+}
+
+function int GetIntLength(int x)
+{
+	int ans = 1;
+	if (x < 0)
+	{
+		x = -x;
+		ans = ans + 1;
+	}
+	if (x >= 10)
+	{
+		ans = ans + GetIntLength(x / 10);
+	}
+	return ans;
 }
 
 function int PrintInt(int x)
 {
 	if (x < 0)
 	{
-		putch(45); // '-'
+		putch('-');
 		x = -x;
 	}
 	if (x >= 10)
 	{
 		PrintInt(x / 10);
 	}
-	putch(x % 10 + 48); // '0'
+	putch(x % 10 + '0');
 }
 
 function int Median3(int a[10010], int Left, int Right)
@@ -146,11 +161,7 @@ function int PrintArr(int a[10010], int n)
 	{
 		PrintInt(a[i]);
 		i = i + 1;
-		putch(32);
-		if (i % 10 == 0)
-		{
-			putch(10);
-		}
+		putch(10);
 	}
 	return 0;
 }

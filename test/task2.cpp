@@ -1,121 +1,132 @@
-#pragma warning(disable:4996)
-#include <stdio.h>
 
-int ReadInt() {
-	int ch = getchar();
-	while ((ch > '9' || ch < '0') && ch != '-') {
-		ch = getchar();
+function int ReadInt()
+{
+	int ch = getch();
+	while ((ch > '9' || ch < '0') && ch != '-')
+	{
+		ch = getch();
 	}
 	int ans = 0;
 	int flag = 1;
-	if (ch == '-') {
+	if (ch == '-')
+	{
 		flag = -1;
-		ch = getchar();
+		ch = getch();
 	}
-	while (ch >= '0' && ch <= '9') {
+	while (ch >= '0' && ch <= '9')
+	{
 		ans = ans * 10 + ch - '0';
-		ch = getchar();
+		ch = getch();
 	}
 	return ans * flag;
 }
 
-int GetIntLength(int x) {
+function int GetIntLength(int x)
+{
 	int ans = 1;
-	if (x < 0) {
+	if (x < 0)
+	{
 		x = -x;
 		ans = ans + 1;
 	}
-	if (x >= 10) {
+	if (x >= 10)
+	{
 		ans = ans + GetIntLength(x / 10);
 	}
 	return ans;
 }
 
-void PrintInt(int x) {
-	if (x < 0) {
-		putchar('-');
+function int PrintInt(int x)
+{
+	if (x < 0)
+	{
+		putch('-');
 		x = -x;
 	}
-	if (x >= 10) {
+	if (x >= 10)
+	{
 		PrintInt(x / 10);
 	}
-	putchar(x % 10 + '0');
+	putch(x % 10 + '0');
 }
 
-const int maxn = 25 + 10;
-int n1, m1, a1[maxn][maxn];
-int n2, m2, a2[maxn][maxn];
-int n3, m3, a3[maxn][maxn];
+int n1, m1, a1[35][35];
+int n2, m2, a2[35][35];
+int n3, m3, a3[35][35];
 
-int main() {
-	//freopen("./input/task2.1.in", "r", stdin);
+function int main()
+{
 	n1 = ReadInt();
 	m1 = ReadInt();
-	//scanf("%d%d", &n1, &m1);
 
 	int i = 1;
-	while (i <= n1) {
+	while (i <= n1)
+	{
 		int j = 1;
-		while (j <= m1) {
+		while (j <= m1)
+		{
 			a1[i][j] = ReadInt();
 			j = j + 1;
-			//scanf("%d", &a1[i][j]);
 		}
 		i = i + 1;
 	}
 
 	n2 = ReadInt();
 	m2 = ReadInt();
-	//scanf("%d%d", &n2, &m2);
 
 	i = 1;
-	while (i <= n2) {
+	while (i <= n2)
+	{
 		int j = 1;
-		while (j <= m2) {
+		while (j <= m2)
+		{
 			a2[i][j] = ReadInt();
 			j = j + 1;
-			//scanf("%d", &a2[i][j]);
 		}
 		i = i + 1;
 	}
 
-	if (m1 != n2) {
-		putchar('I');
-		putchar('n');
-		putchar('c');
-		putchar('o');
-		putchar('m');
-		putchar('p');
-		putchar('a');
-		putchar('t');
-		putchar('i');
-		putchar('b');
-		putchar('l');
-		putchar('e');
-		putchar(' ');
-		putchar('D');
-		putchar('i');
-		putchar('m');
-		putchar('e');
-		putchar('n');
-		putchar('s');
-		putchar('i');
-		putchar('o');
-		putchar('n');
-		putchar('s');
-		putchar('\n');
-		//printf("Incompatible Dimensions\n");
+	if (m1 != n2)
+	{
+		putch('I');
+		putch('n');
+		putch('c');
+		putch('o');
+		putch('m');
+		putch('p');
+		putch('a');
+		putch('t');
+		putch('i');
+		putch('b');
+		putch('l');
+		putch('e');
+		putch(' ');
+		putch('D');
+		putch('i');
+		putch('m');
+		putch('e');
+		putch('n');
+		putch('s');
+		putch('i');
+		putch('o');
+		putch('n');
+		putch('s');
+		putch(10);
 		return 0;
 	}
-	
-	n3 = n1; m3 = m2;
+
+	n3 = n1;
+	m3 = m2;
 	i = 1;
-	while (i <= n3) {
+	while (i <= n3)
+	{
 		int j = 1;
-		while (j <= m3) {
+		while (j <= m3)
+		{
 			int k = 1;
-			while (k <= m1) {
-				a3[i][j] += a1[i][k] * a2[k][j];
+			while (k <= m1)
+			{
+				a3[i][j] = a3[i][j] + a1[i][k] * a2[k][j];
 				k = k + 1;
 			}
 			j = j + 1;
@@ -124,23 +135,23 @@ int main() {
 	}
 
 	i = 1;
-	while (i <= n3) {
+	while (i <= n3)
+	{
 		int j = 1;
-		while (j <= m3) {
+		while (j <= m3)
+		{
 			int len = GetIntLength(a3[i][j]);
 			int k = 1;
-			//printf("len = %d\n", len);
-			while (k <= 10 - len) {
-				putchar(' ');
+			while (k <= 10 - len)
+			{
+				putch(' ');
 				k = k + 1;
 			}
 			PrintInt(a3[i][j]);
 			j = j + 1;
-			//printf("%10d", a3[i][j]);
 		}
 		i = i + 1;
-		putchar('\n');
+		putch(10);
 	}
-	
 	return 0;
 }
