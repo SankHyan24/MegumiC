@@ -35,21 +35,28 @@ function int PrintInt(int x)
     putch(x % 10 + 48); // '0'
 }
 
-function int sc()
+function int sc(int a2[])
 {
-    return 123;
+    int a1 = a2[0];
+    a2[0] = a2[1];
+    a2[1] = a1;
+    return 0;
 }
 function int main()
 {
 
-    n = ReadInt();
-    int i = 1;
-    while (i <= n)
-    {
-        a[i] = ReadInt();
-        i = i + 1;
-    }
-    i = 1;
+    // n = ReadInt();
+    // int i = 1;
+    // while (i <= n)
+    // {
+    //     a[i] = ReadInt();
+    //     i = i + 1;
+    // }
+    int i = 0;
+    n = 2;
+    a[0] = 1;
+    a[1] = 2;
+    sc(a);
     while (i <= n)
     {
         PrintInt(a[i]);

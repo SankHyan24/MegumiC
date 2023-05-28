@@ -354,6 +354,7 @@ namespace MC::ASM
             out << "\tadd t0, t0, t1" << std::endl;
             // store the ptr to %ptr
             _store_reg_to_var(ctx, out, this->opname1, 0, 5);
+
             break;
         }
         case MC::IR::IROp::ArrayDef:
@@ -423,10 +424,16 @@ namespace MC::ASM
                 out << "\tla t0, " << src << std::endl;
                 out << "\tlw t0, 0(t0)" << std::endl;
             }
-            else if (srcType == MC::IR::IROp::Alloc)
+            else if (srcType == MC::IR::IROp::Alloc && !this->is_alloc_array)
             {
                 Address srcAddr = ctx.find_symbol_last_table(src);
                 out << "\tlw t0, " << srcAddr.get_offset() << "(sp)" << std::endl;
+            }
+            else if (srcType == MC::IR::IROp::Alloc && this->is_alloc_array)
+            {
+                Address srcAddr = ctx.find_symbol_last_table(src);
+                out << "\tlw t1, " << srcAddr.get_offset() << "(sp)" << std::endl;
+                out << "\tlw t0, 0(t1)" << std::endl;
             }
             else if (srcType == MC::IR::IROp::GetPtr || srcType == MC::IR::IROp::GetElementPtr)
             {
@@ -464,9 +471,9 @@ namespace MC::ASM
             ctx.insert_global(this->opname1, {1});
             out << this->opname1 << ":" << std::endl;
             if (this->opname2[0] == 'z') // zero init
-                out << "\t.zero 1" << std::endl;
+                out << "\t.zero 4" << std::endl;
             else
-                out << "\t.word " << std::stoi(this->opname2) << std::endl;
+                out << "\t.word " << std::stoi(this->opname2) * 4 << std::endl;
             break;
         }
         case MC::IR::IROp::GlobalArray:
@@ -480,7 +487,7 @@ namespace MC::ASM
             {
                 if (zero_accu != 0 && this->array_init_buffer[i] != 0)
                 {
-                    out << "\t.zero " << zero_accu << std::endl;
+                    out << "\t.zero " << zero_accu * 4 << std::endl;
                     zero_accu = 0;
                 }
                 if (this->array_init_buffer[i] == 0)
@@ -489,7 +496,7 @@ namespace MC::ASM
                     out << "\t.word " << this->array_init_buffer[i] << std::endl;
             }
             if (zero_accu != 0)
-                out << "\t.zero " << zero_accu << std::endl;
+                out << "\t.zero " << zero_accu * 4 << std::endl;
             break;
         }
         default:

@@ -45,8 +45,9 @@ namespace MC::ASM
 
         // a new var?
         bool is_new_var{false};
-        bool is_alloc{false};
 
+        bool is_alloc{false};
+        bool is_alloc_array{false}; // alloc *i32
         // if use opname, is 2op or 3op
         bool is_2_op{false};
         bool is_number{false};

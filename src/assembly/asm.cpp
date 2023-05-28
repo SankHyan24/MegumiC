@@ -234,6 +234,9 @@ namespace MC::ASM
         {
             auto this_ir = dynamic_cast<MC::IR::IRGetPtr *>(ir_code.get());
             irt_->is_getptr = true;
+            irt_->getelementptrLvl = this_ir->Lvl;
+            irt_->getelementptrType = this_ir->IRGetElementPtrType;
+
             irt_->is_store_imm = if_number(this_ir->Index);
             irt_->opname1 = get_varname_from_str(this_ir->Ptr);
             irt_->opname2 = get_varname_from_str(this_ir->Var);
@@ -300,6 +303,8 @@ namespace MC::ASM
         {
             auto this_ir = dynamic_cast<MC::IR::IRAlloc *>(ir_code.get());
             irt_->is_alloc = true;
+            irt_->is_alloc_array = (this_ir->AllocType == MC::IR::VarType::Ptr);
+
             irt_->opname1 = get_varname_from_str(this_ir->Var);
             break;
         }

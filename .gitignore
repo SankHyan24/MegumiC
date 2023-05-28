@@ -3,7 +3,7 @@ build/
 *.mc
 *back_main*
 *target.s
-*target.ir
+*hello.ir
 
 
 # Prerequisites

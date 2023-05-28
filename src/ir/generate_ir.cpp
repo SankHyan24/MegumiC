@@ -232,10 +232,17 @@ namespace MC::AST::node
                 std::string exp_ir_name = this->index_list.at(i)->get_name();
                 int index_name = ctx.get_id();
                 std::string ptr_ir_name = ir_name_ptr + '.' + std::to_string(index_name);
-                if (i == 0 && varinfo.type == MC::IR::VarType::Ptr)
+                if (i == 0 && varinfo.type == MC::IR::VarType::Ptr) // 数组参数
                 {
+                    int new_id = ctx.get_id();
+                    std::string new_name = "%" + std::to_string(new_id);
+                    ir.push_back(std::unique_ptr<MC::IR::IRLoad>());
+                    ir.back().reset(new MC::IR::IRLoad(ir_name_ptr, new_name));
                     ir.push_back(std::unique_ptr<MC::IR::IRGetPtr>());
-                    ir.back().reset(new MC::IR::IRGetPtr(ptr_ir_name, ir_name_ptr, exp_ir_name));
+                    auto tmp = new MC::IR::IRGetPtr(ptr_ir_name, new_name, exp_ir_name);
+                    tmp->IRGetElementPtrType = 1;
+                    tmp->Lvl = 0;
+                    ir.back().reset(tmp);
                 }
                 else
                 {

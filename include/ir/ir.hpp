@@ -211,6 +211,13 @@ namespace MC::IR
     class IRGetPtr : public IRcode
     {
     public:
+        int IRGetElementPtrType;
+        // 0是一个针对全局数组的操作
+        // 是一个针对局部数组的操作
+        // 1并不是第一层了
+        int Lvl;
+        // 层数，shape几层它几层
+        // 最少1层
         std::string Ptr;
         std::string Var;
         std::string Index;
