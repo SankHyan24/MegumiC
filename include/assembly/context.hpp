@@ -15,6 +15,7 @@ namespace MC::ASM
     {
     public:
         static int reg_count;
+        static int SimmMax;
         static std::string get_x_name(int i);
     };
 

@@ -33,12 +33,13 @@ namespace
     {
         std::string str;
         std::vector<int> shape_;
+        std::vector<int> buffer;
         for (int i = 1; i < shape.size(); i++)
             shape_.push_back(shape[i]);
         if (shape.size() == 0)
         {
-            return "0";
             init_buffer.push_back(0);
+            return "0";
         }
         for (int i = 0; i < shape[0]; i++)
         {
@@ -64,6 +65,7 @@ namespace
         std::string str;
         auto initValue = dynamic_cast<MC::AST::node::ArrayDeclareInitValue *>(exp);
         std::vector<int> shape_;
+        std::vector<int> buffer;
         for (int i = 1; i < shape.size(); i++)
             shape_.push_back(shape[i]);
         if (initValue->value == nullptr) // is a value list
@@ -88,6 +90,7 @@ namespace
             str += std::to_string(get_number(initValue->value.get()));
             init_buffer.push_back(get_number(initValue->value.get()));
         }
+        // init_buffer.insert(init_buffer.end(), buffer.begin(), buffer.end());
         return str;
     }
 

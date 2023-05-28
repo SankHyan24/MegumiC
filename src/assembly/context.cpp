@@ -2,6 +2,7 @@
 namespace MC::ASM
 {
     int RV32RegUtil::reg_count = 32;
+    int RV32RegUtil::SimmMax = 2047;
     std::string RV32RegUtil::get_x_name(int x)
     {
         std::string name("");

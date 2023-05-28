@@ -10,7 +10,15 @@ namespace MC::ASM
         try
         {
             Address addr = ctx.find_symbol_last_table(varName);
-            out << "\tlw " << RV32RegUtil::get_x_name(reg_num) << ", " << addr.get_offset() << "(sp)" << std::endl;
+            int sp_offset = addr.get_offset();
+            if (sp_offset < RV32RegUtil::SimmMax)
+                out << "\tlw " << RV32RegUtil::get_x_name(reg_num) << ", " << addr.get_offset() << "(sp)" << std::endl;
+            else
+            {
+                out << "\tli t4," << sp_offset << std::endl;
+                out << "\tadd t4, t4, sp" << std::endl;
+                out << "\tlw " << RV32RegUtil::get_x_name(reg_num) << ", 0(t4)" << std::endl;
+            }
         }
         catch (const std::exception &e)
         {
@@ -27,7 +35,14 @@ namespace MC::ASM
         try
         {
             Address addr = ctx.find_symbol_last_table(varName);
-            out << "\taddi " << RV32RegUtil::get_x_name(reg_num) << ",sp," << addr.get_offset() << std::endl;
+            if (addr.get_offset() < RV32RegUtil::SimmMax)
+                out << "\taddi " << RV32RegUtil::get_x_name(reg_num) << ",sp," << addr.get_offset() << std::endl;
+            else
+            {
+                out << "\tli t4," << addr.get_offset() << std::endl;
+                out << "\tadd t4, t4, sp" << std::endl;
+                out << "\taddi " << RV32RegUtil::get_x_name(reg_num) << ",t4,0" << std::endl;
+            }
         }
         catch (const std::exception &e)
         {
@@ -43,8 +58,15 @@ namespace MC::ASM
         if (ctx.if_in_symbol_table(varName))
         {
             Address addr = ctx.find_symbol_last_table(varName);
-
-            out << "\tsw " << RV32RegUtil::get_x_name(reg_num) << ", " << addr.get_offset() << "(sp)" << std::endl;
+            int sp_offset = addr.get_offset();
+            if (sp_offset < RV32RegUtil::SimmMax)
+                out << "\tsw " << RV32RegUtil::get_x_name(reg_num) << ", " << addr.get_offset() << "(sp)" << std::endl;
+            else
+            {
+                out << "\tli t4," << sp_offset << std::endl;
+                out << "\tadd t4, t4, sp" << std::endl;
+                out << "\tsw " << RV32RegUtil::get_x_name(reg_num) << ", 0(t4)" << std::endl;
+            }
         }
         else
         {
@@ -164,26 +186,57 @@ namespace MC::ASM
                 {
                     j++;
                     Address addr = ctx.find_symbol_last_table("reg_" + RV32RegUtil::get_x_name(i));
-                    out << "\tsw " << RV32RegUtil::get_x_name(i) << ", " << addr.get_offset() << "(sp)" << std::endl;
+                    int sp_offset = addr.get_offset();
+                    if (sp_offset < RV32RegUtil::SimmMax)
+                        out << "\tsw " << RV32RegUtil::get_x_name(i) << ", " << addr.get_offset() << "(sp)" << std::endl;
+                    else
+                    {
+                        out << "\tli t4," << sp_offset << std::endl;
+                        out << "\tadd t4, t4, sp" << std::endl;
+                        out << "\tsw " << RV32RegUtil::get_x_name(i) << ", 0(t4)" << std::endl;
+                    }
                 }
             // store the parameters into registers
             for (int i = 0; i < arg_count; i++)
             {
                 Address addr = ctx.find_symbol_last_table(this->params_name[i]);
-                out << "\tlw " << RV32RegUtil::get_x_name(i + 10) << ", " << addr.get_offset() << "(sp)" << std::endl;
+                int sp_offset = addr.get_offset();
+                if (sp_offset < RV32RegUtil::SimmMax)
+                    out << "\tlw " << RV32RegUtil::get_x_name(i + 10) << ", " << addr.get_offset() << "(sp)" << std::endl;
+                else
+                {
+                    out << "\tli t4," << sp_offset << std::endl;
+                    out << "\tadd t4, t4, sp" << std::endl;
+                    out << "\tlw " << RV32RegUtil::get_x_name(i + 10) << ", 0(t4)" << std::endl;
+                }
             }
             // call
             out << "\tcall " << this->opname2 << std::endl;
             // catch the return value
             Address addr = ctx.find_symbol_last_table(this->getNewVarName());
-            out << "\tsw a0, " << addr.get_offset() << "(sp)" << std::endl;
+            if (addr.get_offset() < RV32RegUtil::SimmMax)
+                out << "\tsw a0, " << addr.get_offset() << "(sp)" << std::endl;
+            else
+            {
+                out << "\tli t4," << addr.get_offset() << std::endl;
+                out << "\tadd t4, t4, sp" << std::endl;
+                out << "\tsw a0, 0(t4)" << std::endl;
+            }
             // restore the register
             for (int i = 0, j = 0; i < RV32RegUtil::reg_count && j < arg_count; i++)
                 if (ctx.getBackBitMask().is_true(i))
                 {
                     j++;
                     Address addr = ctx.find_symbol_last_table("reg_" + RV32RegUtil::get_x_name(i));
-                    out << "\tlw " << RV32RegUtil::get_x_name(i) << ", " << addr.get_offset() << "(sp)" << std::endl;
+                    int sp_offset = addr.get_offset();
+                    if (sp_offset < RV32RegUtil::SimmMax)
+                        out << "\tlw " << RV32RegUtil::get_x_name(i) << ", " << addr.get_offset() << "(sp)" << std::endl;
+                    else
+                    {
+                        out << "\tli t4," << sp_offset << std::endl;
+                        out << "\tadd t4, t4, sp" << std::endl;
+                        out << "\tlw " << RV32RegUtil::get_x_name(i) << ", 0(t4)" << std::endl;
+                    }
                 }
 
             break;
@@ -194,9 +247,23 @@ namespace MC::ASM
             Address op2Addr = ctx.find_symbol_last_table(this->opname2);
             Address op3Addr = ctx.find_symbol_last_table(this->opname3);
             // load t0 op2Addr
-            out << "\tlw t0, " << op2Addr.get_offset() << "(sp)" << std::endl;
+            if (op2Addr.get_offset() < RV32RegUtil::SimmMax)
+                out << "\tlw t0, " << op2Addr.get_offset() << "(sp)" << std::endl;
+            else
+            {
+                out << "\tli t4," << op2Addr.get_offset() << std::endl;
+                out << "\tadd t4, t4, sp" << std::endl;
+                out << "\tlw t0, 0(t4)" << std::endl;
+            }
             // load t1 op3Addr
-            out << "\tlw t1, " << op3Addr.get_offset() << "(sp)" << std::endl;
+            if (op3Addr.get_offset() < RV32RegUtil::SimmMax)
+                out << "\tlw t1, " << op3Addr.get_offset() << "(sp)" << std::endl;
+            else
+            {
+                out << "\tli t4," << op3Addr.get_offset() << std::endl;
+                out << "\tadd t4, t4, sp" << std::endl;
+                out << "\tlw t1, 0(t4)" << std::endl;
+            }
             // op
             std::string opEng = MC::IR::BinOp2RV32String(this->opcode);
             // out << "\t" << opEng << " t0, t0, t1" << std::endl;
@@ -252,7 +319,14 @@ namespace MC::ASM
                 break;
             }
             // store t0 op1Addr
-            out << "\tsw t0, " << op1Addr.get_offset() << "(sp)" << std::endl;
+            if (op1Addr.get_offset() < RV32RegUtil::SimmMax)
+                out << "\tsw t0, " << op1Addr.get_offset() << "(sp)" << std::endl;
+            else
+            {
+                out << "\tli t4," << op1Addr.get_offset() << std::endl;
+                out << "\tadd t4, t4, sp" << std::endl;
+                out << "\tsw t0, 0(t4)" << std::endl;
+            }
             break;
         }
         case MC::IR::IROp::AssignUnaryOp:
@@ -264,22 +338,50 @@ namespace MC::ASM
             switch (this->opcode)
             {
             case MC::IR::BinOp::NOT:
-                out << "\tlw t0, " << op2Addr.get_offset() << "(sp)" << std::endl;
+                if (op2Addr.get_offset() < RV32RegUtil::SimmMax)
+                    out << "\tlw t0, " << op2Addr.get_offset() << "(sp)" << std::endl;
+                else
+                {
+                    out << "\tli t4," << op2Addr.get_offset() << std::endl;
+                    out << "\tadd t4, t4, sp" << std::endl;
+                    out << "\tlw t0, 0(t4)" << std::endl;
+                }
                 // t1 = zero -1
                 out << "\tli t1, -1" << std::endl;
                 out << "\txor t0, t1" << std::endl;
                 // store t0 op1Addr
-                out << "\tsw t0, " << op1Addr.get_offset() << "(sp)" << std::endl;
+                if (op1Addr.get_offset() < RV32RegUtil::SimmMax)
+                    out << "\tsw t0, " << op1Addr.get_offset() << "(sp)" << std::endl;
+                else
+                {
+                    out << "\tli t4," << op1Addr.get_offset() << std::endl;
+                    out << "\tadd t4, t4, sp" << std::endl;
+                    out << "\tsw t0, 0(t4)" << std::endl;
+                }
                 break;
             case MC::IR::BinOp::ADD:
                 break;
             case MC::IR::BinOp::SUB:
                 // t0 =var
-                out << "\tlw t0, " << op2Addr.get_offset() << "(sp)" << std::endl;
+                if (op2Addr.get_offset() < RV32RegUtil::SimmMax)
+                    out << "\tlw t0, " << op2Addr.get_offset() << "(sp)" << std::endl;
+                else
+                {
+                    out << "li t4," << op2Addr.get_offset() << std::endl;
+                    out << "add t4, t4, sp" << std::endl;
+                    out << "lw t0, 0(t4)" << std::endl;
+                }
                 // t0 = -t0
                 out << "\tsub t0, zero, t0" << std::endl;
                 // store t0 op1Addr
-                out << "\tsw t0, " << op1Addr.get_offset() << "(sp)" << std::endl;
+                if (op1Addr.get_offset() < RV32RegUtil::SimmMax)
+                    out << "\tsw t0, " << op1Addr.get_offset() << "(sp)" << std::endl;
+                else
+                {
+                    out << "\tli t4," << op1Addr.get_offset() << std::endl;
+                    out << "\tadd t4, t4, sp" << std::endl;
+                    out << "\tsw t0, 0(t4)" << std::endl;
+                }
                 break;
 
             default:
@@ -295,17 +397,31 @@ namespace MC::ASM
             {
                 Address op1Addr = ctx.find_symbol_last_table(this->opname1);
                 out << "\tli t0, " << num << std::endl;
-                out << "\tsw t0, " << op1Addr.get_offset() << "(sp)" << std::endl;
+                if (op1Addr.get_offset() < RV32RegUtil::SimmMax)
+                    out << "\tsw t0, " << op1Addr.get_offset() << "(sp)" << std::endl;
+                else
+                {
+                    out << "\tli t4," << op1Addr.get_offset() << std::endl;
+                    out << "\tadd t4, t4, sp" << std::endl;
+                    out << "\tsw t0, 0(t4)" << std::endl;
+                }
             }
             else if (num > -2147483648 && num < 2147483647) // 32 bit
             {
-                // use lui, addi
+                // use lui
                 int high = num >> 12;
                 int low = num & 0xfff;
                 Address op1Addr = ctx.find_symbol_last_table(this->opname1);
                 out << "\tlui t0, " << high << std::endl;
                 out << "\taddi t0, t0, " << low << std::endl;
-                out << "\tsw t0, " << op1Addr.get_offset() << "(sp)" << std::endl;
+                if (op1Addr.get_offset() < RV32RegUtil::SimmMax)
+                    out << "\tsw t0, " << op1Addr.get_offset() << "(sp)" << std::endl;
+                else
+                {
+                    out << "\tli t4," << op1Addr.get_offset() << std::endl;
+                    out << "\tadd t4, t4, sp" << std::endl;
+                    out << "\tsw t0, 0(t4)" << std::endl;
+                }
             }
             else
                 throw std::runtime_error("Immediately number is too big, over 32 bit");
@@ -319,7 +435,14 @@ namespace MC::ASM
             Address op1Addr = ctx.find_symbol_last_table(this->opname1);
             std::string ifLabel = this->opname2;
             std::string elseLabel = this->opname3;
-            out << "\tlw t0, " << op1Addr.get_offset() << "(sp)" << std::endl;
+            if (op1Addr.get_offset() < RV32RegUtil::SimmMax)
+                out << "\tlw t0, " << op1Addr.get_offset() << "(sp)" << std::endl;
+            else
+            {
+                out << "\tli t4," << op1Addr.get_offset() << std::endl;
+                out << "\tadd t4, t4, sp" << std::endl;
+                out << "\tlw t0, 0(t4)" << std::endl;
+            }
             out << "\tbeq t0, zero, " << elseLabel << std::endl;
             out << "\tj " << ifLabel << std::endl;
             break;
@@ -387,11 +510,25 @@ namespace MC::ASM
                 {
                     if (opname1.at(0) != 'a')
                         throw std::runtime_error("Can't store a function referencee");
-                    out << "\tlw t0, " << op1Addr.get_offset() << "(sp)" << std::endl;
+                    if (op1Addr.get_offset() < RV32RegUtil::SimmMax)
+                        out << "\tlw t0, " << op1Addr.get_offset() << "(sp)" << std::endl;
+                    else
+                    {
+                        out << "\tli t4," << op1Addr.get_offset() << std::endl;
+                        out << "\tadd t4, t4, sp" << std::endl;
+                        out << "\tlw t0, 0(t4)" << std::endl;
+                    }
                 }
                 else
                 {
-                    out << "\tlw t0, " << op1Addr.get_offset() << "(sp)" << std::endl;
+                    if (op1Addr.get_offset() < RV32RegUtil::SimmMax)
+                        out << "\tlw t0, " << op1Addr.get_offset() << "(sp)" << std::endl;
+                    else
+                    {
+                        out << "\tli t4," << op1Addr.get_offset() << std::endl;
+                        out << "\tadd t4, t4, sp" << std::endl;
+                        out << "\tlw t0, 0(t4)" << std::endl;
+                    }
                 }
             }
             // store t0 to opname2
@@ -406,12 +543,26 @@ namespace MC::ASM
             else if (op2Type == MC::IR::IROp::Alloc)
             {
                 Address op2Addr = ctx.find_symbol_last_table(this->opname2);
-                out << "\tsw t0," << op2Addr.get_offset() << "(sp)" << std::endl;
+                if (op2Addr.get_offset() < RV32RegUtil::SimmMax)
+                    out << "\tsw t0," << op2Addr.get_offset() << "(sp)" << std::endl;
+                else
+                {
+                    out << "\tli t4," << op2Addr.get_offset() << std::endl;
+                    out << "\tadd t4, t4, sp" << std::endl;
+                    out << "\tsw t0, 0(t4)" << std::endl;
+                }
             }
             else if (op2Type == MC::IR::IROp::GetPtr || op2Type == MC::IR::IROp::GetElementPtr)
             {
                 Address op2Addr = ctx.find_symbol_last_table(this->opname2);
-                out << "\tlw t1, " << op2Addr.get_offset() << "(sp)" << std::endl;
+                if (op2Addr.get_offset() < RV32RegUtil::SimmMax)
+                    out << "\tlw t1, " << op2Addr.get_offset() << "(sp)" << std::endl;
+                else
+                {
+                    out << "\tli t4," << op2Addr.get_offset() << std::endl;
+                    out << "\tadd t4, t4, sp" << std::endl;
+                    out << "\tlw t1, 0(t4)" << std::endl;
+                }
                 out << "\tsw t0, 0(t1)" << std::endl;
             }
             else
@@ -433,18 +584,39 @@ namespace MC::ASM
             else if (srcType == MC::IR::IROp::Alloc && !this->is_alloc_array)
             {
                 Address srcAddr = ctx.find_symbol_last_table(src);
-                out << "\tlw t0, " << srcAddr.get_offset() << "(sp)" << std::endl;
+                if (srcAddr.get_offset() < RV32RegUtil::SimmMax)
+                    out << "\tlw t0, " << srcAddr.get_offset() << "(sp)" << std::endl;
+                else
+                {
+                    out << "\tli t4," << srcAddr.get_offset() << std::endl;
+                    out << "\tadd t4, t4, sp" << std::endl;
+                    out << "\tlw t0, 0(t4)" << std::endl;
+                }
             }
             else if (srcType == MC::IR::IROp::Alloc && this->is_alloc_array)
             {
                 Address srcAddr = ctx.find_symbol_last_table(src);
-                out << "\tlw t1, " << srcAddr.get_offset() << "(sp)" << std::endl;
+                if (srcAddr.get_offset() < RV32RegUtil::SimmMax)
+                    out << "\tlw t1, " << srcAddr.get_offset() << "(sp)" << std::endl;
+                else
+                {
+                    out << "\tli t4," << srcAddr.get_offset() << std::endl;
+                    out << "\tadd t4, t4, sp" << std::endl;
+                    out << "\tlw t1, 0(t4)" << std::endl;
+                }
                 out << "\tlw t0, 0(t1)" << std::endl;
             }
             else if (srcType == MC::IR::IROp::GetPtr || srcType == MC::IR::IROp::GetElementPtr)
             {
                 Address srcAddr = ctx.find_symbol_last_table(src);
-                out << "\tlw t1, " << srcAddr.get_offset() << "(sp)" << std::endl;
+                if (srcAddr.get_offset() < RV32RegUtil::SimmMax)
+                    out << "\tlw t1, " << srcAddr.get_offset() << "(sp)" << std::endl;
+                else
+                {
+                    out << "\tli t4," << srcAddr.get_offset() << std::endl;
+                    out << "\tadd t4, t4, sp" << std::endl;
+                    out << "\tlw t1, 0(t4)" << std::endl;
+                }
                 out << "\tlw t0, 0(t1)" << std::endl;
             }
             else
@@ -452,7 +624,14 @@ namespace MC::ASM
                 throw std::runtime_error("Can't load other type");
             }
             Address dstAddr = ctx.find_symbol_last_table(dst);
-            out << "\tsw t0, " << dstAddr.get_offset() << "(sp)" << std::endl;
+            if (dstAddr.get_offset() < RV32RegUtil::SimmMax)
+                out << "\tsw t0, " << dstAddr.get_offset() << "(sp)" << std::endl;
+            else
+            {
+                out << "\tli t4," << dstAddr.get_offset() << std::endl;
+                out << "\tadd t4, t4, sp" << std::endl;
+                out << "\tsw t0, 0(t4)" << std::endl;
+            }
             break;
         }
         case MC::IR::IROp::Alloc:
@@ -461,12 +640,32 @@ namespace MC::ASM
         {
             // load a0 opname1
             Address op1Addr = ctx.find_symbol_last_table(this->opname1);
-            out << "\tlw a0, " << op1Addr.get_offset() << "(sp)" << std::endl;
+            if (op1Addr.get_offset() < RV32RegUtil::SimmMax)
+                out << "\tlw a0, " << op1Addr.get_offset() << "(sp)" << std::endl;
+            else
+            {
+                out << "\tli t4," << op1Addr.get_offset() << std::endl;
+                out << "\tadd t4, t4, sp" << std::endl;
+                out << "\tlw a0, 0(t4)" << std::endl;
+            }
             // load ra
             Address raAddr = ctx.find_symbol_last_table("reg_ra");
-            out << "\tlw ra, " << raAddr.get_offset() << "(sp)" << std::endl;
+            if (raAddr.get_offset() < RV32RegUtil::SimmMax)
+                out << "\tlw ra, " << raAddr.get_offset() << "(sp)" << std::endl;
+            else
+            {
+                out << "\tli t4," << raAddr.get_offset() << std::endl;
+                out << "\tadd t4, t4, sp" << std::endl;
+                out << "\tlw ra, 0(t4)" << std::endl;
+            }
             // restore sp
-            out << "\taddi sp, sp, " << ctx.this_function_stack_size << std::endl;
+            if (ctx.this_function_stack_size < RV32RegUtil::SimmMax)
+                out << "\taddi sp, sp, " << ctx.this_function_stack_size << std::endl;
+            else
+            {
+                out << "\tli t4," << ctx.this_function_stack_size << std::endl;
+                out << "\tadd sp, sp, t4" << std::endl;
+            }
 
             // addi sp, sp, 4
             out << "\tjr ra" << std::endl;
@@ -537,12 +736,20 @@ namespace MC::ASM
         out << "\t.globl\t" << functionName << std::endl;
         out << functionName << ":" << std::endl;
         // prologue:
-        out << "\taddi\tsp,sp,-" << needStackByte << std::endl;
+        out << "\tli t0," << needStackByte << std::endl;
+        out << "\tsub sp, sp, t0" << std::endl;
         // save ra
         Address raAddr = ctx.allocate_address(1);
         ctx.insert_symbol("reg_ra", raAddr);
         ctx.insert_type("reg_ra", MC::IR::IROp::FuncDef);
-        out << "\tsw\tra," << raAddr.get_offset() << "(sp)" << std::endl;
+        if (raAddr.get_offset() < RV32RegUtil::SimmMax)
+            out << "\tsw\tra," << raAddr.get_offset() << "(sp)" << std::endl;
+        else
+        {
+            out << "\tli t4," << raAddr.get_offset() << std::endl;
+            out << "\tadd t4, t4, sp" << std::endl;
+            out << "\tsw ra,0(t4)" << std::endl;
+        }
         // insert other register into symbol table
         for (int i = 0; i < RV32RegUtil::reg_count; i++)
             if (ctx.getBackBitMask().is_true(i))
@@ -567,7 +774,14 @@ namespace MC::ASM
             {
                 throw std::runtime_error("too many arguments");
             }
-            out << "\tsw\t" << RV32RegUtil::get_x_name(regid) << "," << tmpAddr.get_offset() << "(sp)" << std::endl;
+            if (tmpAddr.get_offset() < RV32RegUtil::SimmMax)
+                out << "\tsw\t" << RV32RegUtil::get_x_name(regid) << "," << tmpAddr.get_offset() << "(sp)" << std::endl;
+            else
+            {
+                out << "\tli t4," << tmpAddr.get_offset() << std::endl;
+                out << "\tadd t4, t4, sp" << std::endl;
+                out << "\tsw\t" << RV32RegUtil::get_x_name(regid) << ",0(t4)" << std::endl;
+            }
         }
         // function body
         for (auto &i : bbList)
