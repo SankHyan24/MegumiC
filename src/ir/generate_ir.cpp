@@ -216,8 +216,10 @@ namespace MC::AST::node
             std::vector<int> shape = varinfo.shape;
             int index_size = this->index_list.size();
 
-            // if (shape.size() != index_size)
-            //     throw std::runtime_error("Index number is not match.");
+            if (shape.size() < index_size)
+            {
+                throw std::runtime_error("Index number is not match.");
+            }
 
             // int ptr_id = ctx.get_id();
             // std::string ptr_name = "%" + std::to_string(ptr_id);
@@ -225,13 +227,18 @@ namespace MC::AST::node
             // ir.push_back(std::unique_ptr<MC::IR::IRLoad>());
             // ir.back().reset(new MC::IR::IRLoad(ir_name_ptr, ptr_name));
             // ir_name_ptr = ptr_name;
-            for (int i = 0; i < shape.size(); i++)
+            for (int i = 0; i < index_size; i++)
             {
 
                 this->index_list.at(i)->generate_ir(ctx, ir);
                 std::string exp_ir_name = this->index_list.at(i)->get_name();
                 int index_name = ctx.get_id();
                 std::string ptr_ir_name = ir_name_ptr + '.' + std::to_string(index_name);
+                if (shape.size() > index_size && i == (index_size - 1)) // int a[12][12]; a[12];的情况
+                {
+                    ptr_ir_name = ir_name_val;
+                }
+
                 if (i == 0 && varinfo.type == MC::IR::VarType::Ptr) // 数组参数
                 {
                     int new_id = ctx.get_id();
@@ -241,7 +248,7 @@ namespace MC::AST::node
                     ir.push_back(std::unique_ptr<MC::IR::IRGetPtr>());
                     auto tmp = new MC::IR::IRGetPtr(ptr_ir_name, new_name, exp_ir_name);
                     tmp->IRGetElementPtrType = 1;
-                    tmp->Lvl = 0;
+                    tmp->Lvl = 1;
                     ir.back().reset(tmp);
                 }
                 else
@@ -251,9 +258,11 @@ namespace MC::AST::node
                 }
                 ir_name_ptr = ptr_ir_name;
             }
-
-            ir.push_back(std::unique_ptr<MC::IR::IRLoad>());
-            ir.back().reset(new MC::IR::IRLoad(ir_name_ptr, ir_name_val));
+            if (shape.size() == index_size)
+            {
+                ir.push_back(std::unique_ptr<MC::IR::IRLoad>());
+                ir.back().reset(new MC::IR::IRLoad(ir_name_ptr, ir_name_val));
+            }
         }
     }
 

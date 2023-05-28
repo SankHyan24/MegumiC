@@ -351,7 +351,7 @@ namespace MC::ASM
             // count the offset to t1
             if (this->getelementptrLvl != 1)
             {
-                out << "\tli t3, " << this->this_lvl_shape << std::endl;
+                out << "\tli t3, " << std::to_string(this->this_lvl_shape == 0 ? 1 : this->this_lvl_shape) << std::endl;
                 out << "\tmul t1, t1, t3" << std::endl;
             }
             out << "\tli t2, 4" << std::endl;

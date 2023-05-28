@@ -231,6 +231,12 @@ namespace MC::IR
         IRType = MC::IR::IROp::GetPtr;
         dst = "    ";
         dst += Ptr + " = getptr " + Var + (Index.empty() ? ", 0" : ", " + Index);
+        dst += " // ";
+        dst += "类型：";
+        dst += ((IRGetElementPtrType == 0) ? "第一次" : "多次的");
+        dst += " 层数: " + std::to_string(Lvl);
+        dst += " Shape：";
+        dst += std::to_string(this->this_lvl_shape);
     }
 
     void IRGetElementPtr::_generate()
