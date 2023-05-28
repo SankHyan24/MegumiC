@@ -1,8 +1,4 @@
 
-
-const int maxn = 10010;
-int n, a[10010];
-
 function int ReadInt()
 {
     int ch = getch();
@@ -35,33 +31,45 @@ function int PrintInt(int x)
     putch(x % 10 + 48); // '0'
 }
 
-function int sc(int a2[])
-{
-    int a1 = a2[0];
-    a2[0] = a2[1];
-    a2[1] = a1;
-    return 0;
-}
 function int main()
 {
-
-    // n = ReadInt();
-    // int i = 1;
-    // while (i <= n)
-    // {
-    //     a[i] = ReadInt();
-    //     i = i + 1;
-    // }
-    int i = 0;
-    n = 2;
-    a[0] = 1;
-    a[1] = 2;
-    sc(a);
-    while (i <= n)
+    int arr[4][4];
+    int i, j, k;
+    i = 0;
+    while (i < 4)
     {
-        PrintInt(a[i]);
+        j = 0;
+        while (j < 4)
+        {
+            PrintInt(i);
+            putch(58);
+            PrintInt(j);
+            putch(58);
+            k = i * 4 + j;
+            arr[i][j] = k;
+            PrintInt(k);
+            putch(58);
+            PrintInt(arr[i][j]);
+            putch(10);
+            j = j + 1;
+        }
         i = i + 1;
-        putch(10); // \n
+    }
+    i = 0;
+    while (i < 4)
+    {
+        j = 0;
+        while (j < 4)
+        {
+            PrintInt(i);
+            putch(58);
+            PrintInt(j);
+            putch(58);
+            PrintInt(arr[i][j]);
+            putch(10);
+            j = j + 1;
+        }
+        i = i + 1;
     }
     return 0;
 }

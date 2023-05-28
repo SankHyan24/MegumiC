@@ -347,7 +347,13 @@ namespace MC::ASM
             }
             else
                 _load_var_to_reg(ctx, out, this->opname3, 0, 6);
+
             // count the offset to t1
+            if (this->getelementptrLvl != 1)
+            {
+                out << "\tli t3, " << this->this_lvl_shape << std::endl;
+                out << "\tmul t1, t1, t3" << std::endl;
+            }
             out << "\tli t2, 4" << std::endl;
             out << "\tmul t1, t1, t2" << std::endl;
             // get the ptr

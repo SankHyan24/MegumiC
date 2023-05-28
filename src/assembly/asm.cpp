@@ -236,6 +236,7 @@ namespace MC::ASM
             irt_->is_getptr = true;
             irt_->getelementptrLvl = this_ir->Lvl;
             irt_->getelementptrType = this_ir->IRGetElementPtrType;
+            irt_->this_lvl_shape = this_ir->this_lvl_shape;
 
             irt_->is_store_imm = if_number(this_ir->Index);
             irt_->opname1 = get_varname_from_str(this_ir->Ptr);
@@ -256,6 +257,7 @@ namespace MC::ASM
             irt_->is_getelementptr = true;
             irt_->getelementptrLvl = this_ir->Lvl;
             irt_->getelementptrType = this_ir->IRGetElementPtrType;
+            irt_->this_lvl_shape = this_ir->this_lvl_shape;
 
             irt_->is_store_imm = if_number(this_ir->Ind);
             irt_->opname1 = get_varname_from_str(this_ir->Ptr);

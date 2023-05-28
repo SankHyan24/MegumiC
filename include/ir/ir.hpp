@@ -215,6 +215,7 @@ namespace MC::IR
         // 0是一个针对全局数组的操作
         // 是一个针对局部数组的操作
         // 1并不是第一层了
+        int this_lvl_shape;
         int Lvl;
         // 层数，shape几层它几层
         // 最少1层
@@ -234,14 +235,15 @@ namespace MC::IR
         // 0是一个针对全局数组的操作
         // 是一个针对局部数组的操作
         // 1并不是第一层了
+        int this_lvl_shape;
         int Lvl;
         // 层数，shape几层它几层
         // 最少1层
         std::string Ptr;
         std::string Arr;
         std::string Ind;
-        IRGetElementPtr(std::string Ptr, std::string Arr, std::string Ind, int IRGetElementPtrType, int Lvl)
-            : Ptr(Ptr), Arr(Arr), Ind(Ind), IRGetElementPtrType(IRGetElementPtrType), Lvl(Lvl) {}
+        IRGetElementPtr(std::string Ptr, std::string Arr, std::string Ind, int IRGetElementPtrType, int Lvl, int this_lvl_shape)
+            : Ptr(Ptr), Arr(Arr), Ind(Ind), IRGetElementPtrType(IRGetElementPtrType), Lvl(Lvl), this_lvl_shape(this_lvl_shape) {}
 
     private:
         virtual void _generate() override;

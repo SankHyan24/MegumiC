@@ -20,17 +20,17 @@ int main(int argc, const char *argv[])
 
 	// generate ast here
 	auto ast = MC::AST::node::generate(inputFile);
-	ast->Dump();
+	// ast->Dump();
 
 	// generate ir here
 	auto ir = MC::IR::generate(ast);
 	ir->Dump(config.getirOutputFileStream());
-	ir->Dump();
+	// ir->Dump();
 
 	// generate assembly here
 	auto assembly = MC::ASM::generate(ir);
 	assembly->Dump(config.getTargetOutputFileStream());
-	assembly->Dump();
+	// assembly->Dump();
 
 	std::cout << "done" << std::endl;
 
