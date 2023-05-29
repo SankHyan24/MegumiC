@@ -119,7 +119,6 @@ namespace MC::ASM
             }
             else
             {
-                std::cout << ir_code_list->at(i)->dump();
                 throw std::runtime_error("Impossible Scenario: bb head not expected");
             }
         }
@@ -139,7 +138,6 @@ namespace MC::ASM
             throw std::runtime_error("label can not be a label ir code");
         irt_->label = label->labelName.substr(1, label->labelName.size());
         codeindex += 1;
-        std::cout << "irt_ label is " << irt_->label << std::endl;
         for (int i = codeindex; i < ir_code_size; i++)
         {
             auto type = ir_code_list->at(i)->IRType;
@@ -147,7 +145,6 @@ namespace MC::ASM
                 throw std::runtime_error("Impossible Scenario: function def/end in a bb");
             if (type == MC::IR::IROp::Void)
             {
-                std::cout << "void " << std::endl;
                 codeindex = i;
                 return irt_;
             }

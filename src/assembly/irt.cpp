@@ -165,7 +165,7 @@ namespace MC::ASM
     void IRTInst::_generateLV0(Context &ctx, std::ostream &out)
     {
         out << "\t//" << this->ircode_dst << std::endl;
-        std::cout << "[" << this->line << "]inst is : " << MC::IR::IROp2String(tag) << " " << std::endl;
+        // std::cout << "[" << this->line << "]inst is : " << MC::IR::IROp2String(tag) << " " << std::endl;
         // todo
         ctx.insert_type(this->getNewVarName(), this->tag);
         if (this->is_new_var && !this->is_global)
@@ -180,7 +180,7 @@ namespace MC::ASM
         {
             // protect the register
             int arg_count = this->params_name.size();
-            std::cout << "arg count is " << arg_count << std::endl;
+            // std::cout << "arg count is " << arg_count << std::endl;
             // for (int i = 0, j = 0; i < RV32RegUtil::reg_count && j < arg_count; i++)
             for (int i = 0, j = 0; i < RV32RegUtil::reg_count; i++)
                 if (ctx.getBackBitMask().is_true(i))
@@ -476,8 +476,11 @@ namespace MC::ASM
             // count the offset to t1
             if (this->getelementptrLvl != 1)
             {
-                out << "\tli t3, " << std::to_string(this->this_lvl_shape == 0 ? 1 : this->this_lvl_shape) << std::endl;
-                out << "\tmul t1, t1, t3" << std::endl;
+                for (auto &i : this->this_lvl_shape)
+                {
+                    out << "\tli t3, " << std::to_string(i == 0 ? 1 : i) << std::endl;
+                    out << "\tmul t1, t1, t3" << std::endl;
+                }
             }
             out << "\tli t2, 4" << std::endl;
             out << "\tmul t1, t1, t2" << std::endl;
@@ -499,7 +502,7 @@ namespace MC::ASM
         case MC::IR::IROp::Store:
         {
             // make the value to be saved to t0
-            std::cout << "make the value to be saved to t0" << std::endl;
+            // std::cout << "make the value to be saved to t0" << std::endl;
             if (this->is_store_imm)
             {
                 out << "\tli t0, " << this->imm << std::endl;
@@ -534,9 +537,9 @@ namespace MC::ASM
                 }
             }
             // store t0 to opname2
-            std::cout << "store t0 to opname2" << std::endl;
+            // std::cout << "store t0 to opname2" << std::endl;
             MC::IR::IROp op2Type = ctx.find_type(this->opname2);
-            std::cout << "type is " << MC::IR::IROp2String(op2Type) << std::endl;
+            // std::cout << "type is " << MC::IR::IROp2String(op2Type) << std::endl;
             if (op2Type == MC::IR::IROp::GlobalArray || op2Type == MC::IR::IROp::GlobalVar)
             {
                 out << "\tla t3, " << this->opname2 << std::endl;
@@ -714,8 +717,8 @@ namespace MC::ASM
     }
     void IRTBasicBlock::_generateLV0(Context &ctx, std::ostream &out)
     {
-        std::cout << "basic block is : " << label << std::endl;
-        std::cout << "need stack byte is : " << needStackByte << std::endl;
+        // std::cout << "basic block is : " << label << std::endl;
+        // std::cout << "need stack byte is : " << needStackByte << std::endl;
 
         out << label << ":" << std::endl;
         for (auto &i : instLists)
@@ -724,14 +727,14 @@ namespace MC::ASM
     void IRTFunction::_generateLV0(Context &ctx, std::ostream &out)
     {
         // precompute:
-        std::cout << "function is : " << functionName << std::endl;
+        // std::cout << "function is : " << functionName << std::endl;
         needStackByte = 0;
         int needStackByteSR = argList.size() * 4; // Stack and Register(all in S and R=0)
         for (auto &i : bbList)
             needStackByteSR += i->count_need_stack_byte(ctx);
         int needStackByteA = 4 + ctx.getBackBitMask().get_reg_count() * 4; // RA and other register must be saved(a0-7)
         needStackByte = needStackByteSR + needStackByteA;
-        std::cout << "need stack byte is : " << needStackByte << std::endl;
+        // std::cout << "need stack byte is : " << needStackByte << std::endl;
         ctx.this_function_stack_size = needStackByte;
         // label name:
         ctx.create_scope(needStackByte);
@@ -789,13 +792,13 @@ namespace MC::ASM
         for (auto &i : bbList)
             i->generate(ctx, out);
         // release the stack
-        std::cout << " stack rest :" << ctx.rest_address_size() << std::endl;
+        // std::cout << " stack rest :" << ctx.rest_address_size() << std::endl;
         ctx.this_function_stack_size = 0;
         ctx.end_scope();
     }
     void IRTRoot::_generateLV0(Context &ctx, std::ostream &out)
     {
-        std::cout << "generate begin" << std::endl;
+        // std::cout << "generate begin" << std::endl;
         out << "\t.data" << std::endl;
         for (auto &i : instList)
         {

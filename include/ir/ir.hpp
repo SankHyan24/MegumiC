@@ -244,7 +244,7 @@ namespace MC::IR
         std::string Arr;
         std::string Ind;
         MC::IR::VarType Get_Type;
-        IRGetElementPtr(std::string Ptr, std::string Arr, std::string Ind, int IRGetElementPtrType, int Lvl, int this_lvl_shape)
+        IRGetElementPtr(std::string Ptr, std::string Arr, std::string Ind, int IRGetElementPtrType, int Lvl, std::vector<int> this_lvl_shape)
             : Ptr(Ptr), Arr(Arr), Ind(Ind), IRGetElementPtrType(IRGetElementPtrType), Lvl(Lvl), this_lvl_shape(this_lvl_shape) {}
 
     private:

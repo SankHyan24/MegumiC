@@ -15,6 +15,8 @@ using namespace std;
 int main(int argc, const char *argv[])
 {
 	MC::config::Config config(argc, argv);
+	if (!config.configInfo())
+		return 0;
 	// generate ast here
 	auto ast = MC::AST::node::generate(config.getInputCode());
 	// ast->Dump();

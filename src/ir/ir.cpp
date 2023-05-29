@@ -235,7 +235,7 @@ namespace MC::IR
         dst += "类型：";
         dst += ((IRGetElementPtrType == 0) ? "第一次" : "多次的");
         dst += " 层数: " + std::to_string(Lvl);
-        dst += " Shape：";
+        dst += " Shape: ";
         for (auto &i : this->this_lvl_shape)
         {
             dst += std::to_string(i);
@@ -255,8 +255,13 @@ namespace MC::IR
         dst += "类型：";
         dst += ((IRGetElementPtrType == 0) ? "第一次" : "多次的");
         dst += " 层数: " + std::to_string(Lvl);
-        dst += " Shape：";
-        dst += std::to_string(this->this_lvl_shape);
+        dst += " Shape: ";
+        for (auto &i : this->this_lvl_shape)
+        {
+            dst += std::to_string(i);
+            if (&i != &this->this_lvl_shape.back())
+                dst += ", ";
+        }
     }
 
     void IRStore::_generate()

@@ -65,7 +65,7 @@ namespace MC::ASM
 
         // for getelementptr
         int getelementptrLvl;
-        int this_lvl_shape{false};
+        std::vector<int> this_lvl_shape;
         int getelementptrType;
 
         // function call
