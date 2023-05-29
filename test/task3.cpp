@@ -5,7 +5,7 @@ function int ReadLine(int s[100])
     if (ch <= 0)
     {
         // printf("ch = %d\n", ch);
-        return 26;
+        return -1;
     }
     int len = 0;
     while (ch != 10 && ch > 0)
@@ -56,19 +56,20 @@ function int Print1FDiv(int x, int y)
         Down = Down - 100;
     }
 
-    // ��Ҫ��λ
     PrintInt(Up);
     putch('.');
     putch(Down / 10 + '0');
 }
 
-int credit[110];
-int need[110][8][8];
-int cnt[110];
-int grade[110];
-int course[110][110];
+int credit[150];
+int need[150][8][8];
+int cnt[150];
+int grade[150];
+int course1[150][150];
+int course[150][150];
+int course3[150][150];
 int course_cnt;
-function int Insert(int s[100])
+function int Insert(int s[1000])
 {
     int now = 0;
     while (s[now] != 0)
@@ -79,7 +80,7 @@ function int Insert(int s[100])
     course_cnt = course_cnt + 1;
     return course_cnt - 1;
 }
-function int GetLen(int s[100])
+function int GetLen(int s[1000])
 {
     int len = 0;
     while (s[len] != 0)
@@ -88,7 +89,7 @@ function int GetLen(int s[100])
     }
     return len;
 }
-function int comp(int s1[100], int s2[100])
+function int comp(int s1[1000], int s2[1000])
 {
     int len1 = GetLen(s1);
     int len2 = GetLen(s2);
@@ -107,12 +108,12 @@ function int comp(int s1[100], int s2[100])
     }
     return 1;
 }
-function int Find(int s[100])
+function int Find(int s[1000])
 {
     int i = 0;
     while (i < course_cnt)
     {
-        if (comp(s, course[i]))
+        if (comp(s, course + i * 150))
         {
             return i;
         }
@@ -120,14 +121,14 @@ function int Find(int s[100])
     }
     return Insert(s);
 }
-int course_input[110];
-function int Prework(int line[100])
+int course_input[150];
+function int Prework(int line[1000])
 {
     if (GetLen(line) == 0)
     {
         return 0;
     }
-    int now[110] = {0};
+    int now[150] = {0};
     int tmp = 0;
     int i = 0;
     while (line[i] != '|')
@@ -143,7 +144,7 @@ function int Prework(int line[100])
     now[tmp] = 0;
     i = i + 1;
 
-    int index = Find(now + 1);
+    int index = Find(now + 4);
     course_input[0] = course_input[0] + 1;
     tmp = course_input[0];
     course_input[tmp] = index;
@@ -170,7 +171,7 @@ function int Prework(int line[100])
             int count = cnt[index];
             need[index][count][0] = need[index][count][0] + 1;
             tmp = need[index][count][0];
-            need[index][count][tmp] = Find(now + 1);
+            need[index][count][tmp] = Find(now + 4);
             if (line[i] == ';' || line[i] == '|')
                 break;
             i = i + 1;
@@ -389,7 +390,7 @@ function int NeedToLearn(int index)
 function int main()
 {
     int line[1000];
-    while (ReadLine(line) != 26)
+    while (ReadLine(line) != -1)
     {
         Prework(line);
     }
@@ -437,7 +438,8 @@ function int main()
         {
             putch(' ');
             putch(' ');
-            PrintLine(course[index]);
+            // PrintInt(index);
+            PrintLine(course + (index)*150 * 4);
         }
         i = i + 1;
     }

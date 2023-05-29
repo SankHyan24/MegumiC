@@ -164,7 +164,7 @@ namespace MC::ASM
     }
     void IRTInst::_generateLV0(Context &ctx, std::ostream &out)
     {
-        // out << "\t//" << this->ircode_dst << std::endl;
+        out << "\t//" << this->ircode_dst << std::endl;
         std::cout << "[" << this->line << "]inst is : " << MC::IR::IROp2String(tag) << " " << std::endl;
         // todo
         ctx.insert_type(this->getNewVarName(), this->tag);

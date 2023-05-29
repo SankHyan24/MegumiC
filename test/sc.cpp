@@ -1,58 +1,50 @@
-static int ReadLine(int s[110])
+#include <stdio.h>
+
+int ReadLine(int s[])
 {
-    int ch = getch();
+    int ch = getchar();
     if (ch <= 0)
     {
         // printf("ch = %d\n", ch);
-        return -1;
+        return EOF;
     }
     int len = 0;
-    while (ch != 10 && ch > 0)
+    while (ch != '\n' && ch > 0)
     {
         s[len] = ch;
-        ch = getch();
+        ch = getchar();
         len = len + 1;
     }
     s[len] = 0;
     return len;
 }
 
-static int PrintLine(int s[110])
+void PrintLine(int s[])
 {
     int i = 0;
     while (s[i] != 0)
     {
-        putch(s[i]);
+        putchar(s[i]);
         i = i + 1;
     }
-    putch(10);
+    putchar('\n');
 }
 
-static int PrintStr(int s[110])
-{
-    int i = 0;
-    while (s[i] != 0)
-    {
-        putch(s[i]);
-        i = i + 1;
-    }
-}
-
-static int PrintInt(int x)
+void PrintInt(int x)
 {
     if (x < 0)
     {
-        putch('-');
+        putchar('-');
         x = -x;
     }
     if (x >= 10)
     {
         PrintInt(x / 10);
     }
-    putch(x % 10 + '0');
+    putchar(x % 10 + '0');
 }
 
-static int Print1FDiv(int x, int y)
+void Print1FDiv(int x, int y)
 {
     int ans = x * 100 / y;
     int Up = (ans + 5) / 100;
@@ -67,20 +59,26 @@ static int Print1FDiv(int x, int y)
 
     // ��Ҫ��λ
     PrintInt(Up);
-    putch('.');
-    putch(Down / 10 + '0');
+    putchar('.');
+    putchar(Down / 10 + '0');
 }
-int test_line = 73;
+
+// struct Course {
+//     int credit;      // ѧ��
+//     int need[8][8];  // ǰ�ÿγ�
+//     int cnt;         // ǰ�ÿγ̵�������
+//     int grade;       // �÷ֵȼ�, -1 ��ʾû�ж���
+// } a[110];
 int credit[110];     // ѧ��
 int need[110][8][8]; // ǰ�ÿγ�
 int cnt[110];        // ǰ�ÿγ̵�������
 int grade[110];      // �÷ֵȼ�, -1 ��ʾû�ж���
 int course[110][110];
-int course_cnt;
-
-static int Insert(int s[110])
+int course_cnt; // hash���ĳ���
+int Insert(int s[])
 {
-
+    // printf("Insert: ");
+    // PrintLine(s);
     int now = 0;
     while (s[now] != 0)
     {
@@ -90,7 +88,7 @@ static int Insert(int s[110])
     course_cnt = course_cnt + 1;
     return course_cnt - 1;
 }
-static int GetLen(int s[110])
+int GetLen(int s[])
 {
     int len = 0;
     while (s[len] != 0)
@@ -99,7 +97,7 @@ static int GetLen(int s[110])
     }
     return len;
 }
-static int comp(int s1[110], int s2[110])
+int comp(int s1[], int s2[])
 {
     int len1 = GetLen(s1);
     int len2 = GetLen(s2);
@@ -118,7 +116,7 @@ static int comp(int s1[110], int s2[110])
     }
     return 1;
 }
-static int Find(int s[110])
+int Find(int s[])
 {
     int i = 0;
     while (i < course_cnt)
@@ -130,16 +128,24 @@ static int Find(int s[110])
         i = i + 1;
     }
     int g = Insert(s);
+    // printf("at %d\n", g);
     return g;
 }
-
+int putch(int ch)
+{
+    putchar(ch);
+    return ch;
+}
+// ��������˳��洢�γ�
 int course_input[110];
-static int Prework(int line[110])
+// ����ǰ�γ̵���Ϣ��������
+void Prework(int line[])
 {
     if (GetLen(line) == 0)
     {
         return;
     }
+    // �ҵ�ǰ�γ� ��1��|֮ǰ
     int now[110] = {0};
     int tmp = 0;
     int i = 0;
@@ -155,17 +161,14 @@ static int Prework(int line[110])
     tmp = now[0];
     now[tmp] = 0;
     i = i + 1;
-    //
 
-    int index = Find(now + 4);
+    int index = Find(now + 1);
     course_input[0] = course_input[0] + 1;
     tmp = course_input[0];
     course_input[tmp] = index;
 
     // ��ǰ�γ̵�ѧ�� 1~2��|֮��
     credit[index] = line[i] - '0';
-    //
-
     i = i + 2;
 
     // ��ǰ�γ̵������γ� 2~3��|֮��
@@ -190,7 +193,7 @@ static int Prework(int line[110])
             int count = cnt[index];
             need[index][count][0] = need[index][count][0] + 1;
             tmp = need[index][count][0];
-            need[index][count][tmp] = Find(now + 4);
+            need[index][count][tmp] = Find(now + 1);
             if (line[i] == ';' || line[i] == '|')
                 break;
             i = i + 1;
@@ -200,7 +203,6 @@ static int Prework(int line[110])
             break;
         i = i + 1;
     }
-
     if (line[i] != 0)
         i = i + 1;
 
@@ -225,21 +227,14 @@ static int Prework(int line[110])
     {
         grade[index] = 0;
     }
-    else if (line[i] == 0)
+    else
     {
         grade[index] = -1;
     }
-    else
-    {
-        {
-            putch('&');
-            putch('&');
-            putch('&');
-        }
-    }
 }
 
-static int PrintGPA()
+// ���GPA
+void PrintGPA()
 {
     // double sum_credit_f = 0, sum_grade_f = 0;
     int sum_credit = 0;
@@ -253,34 +248,43 @@ static int PrintGPA()
             continue;
         }
         sum_credit = sum_credit + credit[i];
+        // sum_credit_f += credit[i];
         sum_grade = sum_grade + grade[i] * credit[i];
+        // sum_grade_f += grade[i] * credit[i];
         i = i + 1;
     }
 
+    /* if (sum_credit == 0)
+         printf("GPA: 0.0\n");
+     else
+         printf("GPA: %.1f\n", sum_grade / sum_credit);*/
+
     if (sum_credit == 0)
     {
-        putch('G');
-        putch('P');
-        putch('A');
-        putch(':');
-        putch(' ');
-        putch('0');
-        putch('.');
-        putch('0');
-        putch(10);
+        putchar('G');
+        putchar('P');
+        putchar('A');
+        putchar(':');
+        putchar(' ');
+        putchar('0');
+        putchar('.');
+        putchar('0');
+        putchar('\n');
     }
     else
     {
-        putch('G');
-        putch('P');
-        putch('A');
-        putch(':');
-        putch(' ');
+        putchar('G');
+        putchar('P');
+        putchar('A');
+        putchar(':');
+        putchar(' ');
         Print1FDiv(sum_grade, sum_credit);
-        putch(10);
+        putchar('\n');
     }
 }
-static int PrintAttemped()
+
+// �������ѧ��
+void PrintAttemped()
 {
     int sum_credit = 0;
     int i = 0;
@@ -294,29 +298,30 @@ static int PrintAttemped()
         sum_credit = sum_credit + credit[i];
         i = i + 1;
     }
-    putch('H');
-    putch('o');
-    putch('u');
-    putch('r');
-    putch('s');
-    putch(' ');
-    putch('A');
-    putch('t');
-    putch('t');
-    putch('e');
-    putch('m');
-    putch('p');
-    putch('t');
-    putch('e');
-    putch('d');
-    putch(':');
-    putch(' ');
+    putchar('H');
+    putchar('o');
+    putchar('u');
+    putchar('r');
+    putchar('s');
+    putchar(' ');
+    putchar('A');
+    putchar('t');
+    putchar('t');
+    putchar('e');
+    putchar('m');
+    putchar('p');
+    putchar('t');
+    putchar('e');
+    putchar('d');
+    putchar(':');
+    putchar(' ');
     PrintInt(sum_credit);
-    putch(10);
+    putchar('\n');
     // printf("Hours Attempted: %d\n", sum_credit);
 }
 
-static int PrintCompleted()
+// �������ѧ��
+void PrintCompleted()
 {
     int sum_credit = 0;
     int i = 0;
@@ -330,29 +335,31 @@ static int PrintCompleted()
         sum_credit = sum_credit + credit[i];
         i = i + 1;
     }
-    putch('H');
-    putch('o');
-    putch('u');
-    putch('r');
-    putch('s');
-    putch(' ');
-    putch('C');
-    putch('o');
-    putch('m');
-    putch('p');
-    putch('l');
-    putch('e');
-    putch('t');
-    putch('e');
-    putch('d');
-    putch(':');
-    putch(' ');
+    putchar('H');
+    putchar('o');
+    putchar('u');
+    putchar('r');
+    putchar('s');
+    putchar(' ');
+    putchar('C');
+    putchar('o');
+    putchar('m');
+    putchar('p');
+    putchar('l');
+    putchar('e');
+    putchar('t');
+    putchar('e');
+    putchar('d');
+    putchar(':');
+    putchar(' ');
     PrintInt(sum_credit);
-    putch(10);
+    putchar('\n');
     // printf("Hours Completed: %d\n", sum_credit);
 }
+
+// ���ʣ��ѧ��
 int credit_remaining;
-static int PrintRemaining()
+void PrintRemaining()
 {
     int sum_credit = 0;
     int i = 0;
@@ -367,41 +374,46 @@ static int PrintRemaining()
         i = i + 1;
     }
     credit_remaining = sum_credit;
-    putch('C');
-    putch('r');
-    putch('e');
-    putch('d');
-    putch('i');
-    putch('t');
-    putch('s');
-    putch(' ');
-    putch('R');
-    putch('e');
-    putch('m');
-    putch('a');
-    putch('i');
-    putch('n');
-    putch('i');
-    putch('n');
-    putch('g');
-    putch(':');
-    putch(' ');
+    putchar('C');
+    putchar('r');
+    putchar('e');
+    putchar('d');
+    putchar('i');
+    putchar('t');
+    putchar('s');
+    putchar(' ');
+    putchar('R');
+    putchar('e');
+    putchar('m');
+    putchar('a');
+    putchar('i');
+    putchar('n');
+    putchar('i');
+    putchar('n');
+    putchar('g');
+    putchar(':');
+    putchar(' ');
     PrintInt(sum_credit);
-    putch(10);
+    putchar('\n');
     // printf("Credits Remaining: %d\n", sum_credit);
 }
 
-static int NeedToLearn(int index)
+// �жϵ�index���γ��Ƿ���Ҫ�޶�
+int NeedToLearn(int index)
 {
+    // �Ѿ��޶�������û�йҿ�
     if (grade[index] > 0)
         return 0;
 
+    // û��ǰ�ÿ�, ����ֱ���޶�
     if (cnt[index] == 0)
         return 1;
 
+    // ��ǰ�ÿ�, �ж��Ƿ�����ĳһ��ǰ�ÿε�Ҫ��
     int i = 0;
     while (i < cnt[index])
     {
+        // ��i��ǰ�ÿ�
         int can_learn = 1;
         int j = 1;
         while (j <= need[index][i][0])
@@ -413,6 +425,16 @@ static int NeedToLearn(int index)
         }
         if (can_learn)
             return 1;
+        i = i + 1;
+    }
+    return 0;
+}
+static int PrintStr(int s[110])
+{
+    int i = 0;
+    while (s[i] != 0)
+    {
+        putch(s[i]);
         i = i + 1;
     }
     return 0;
@@ -453,11 +475,12 @@ static int printNeedArray()
     }
     return 0;
 }
-
-static int main()
+int main()
 {
+    // freopen("./input/task3.1.in", "r", stdin);
     int line[1000];
-    while (ReadLine(line) != -1)
+    // while (scanf("%s", line) != EOF) {
+    while (ReadLine(line) != EOF)
     {
         Prework(line);
         // fprintf(stderr, "%s\n", line);
@@ -467,79 +490,82 @@ static int main()
     PrintCompleted();
     PrintRemaining();
 
-    putch(10);
-    putch('P');
-    putch('o');
-    putch('s');
-    putch('s');
-    putch('i');
-    putch('b');
-    putch('l');
-    putch('e');
-    putch(' ');
-    putch('C');
-    putch('o');
-    putch('u');
-    putch('r');
-    putch('s');
-    putch('e');
-    putch('s');
-    putch(' ');
-    putch('t');
-    putch('o');
-    putch(' ');
-    putch('T');
-    putch('a');
-    putch('k');
-    putch('e');
-    putch(' ');
-    putch('N');
-    putch('e');
-    putch('x');
-    putch('t');
-    putch(10);
-    printf("\nPossible Courses to Take Next\n");
-    int i = 1;
-    while (i <= course_input[0])
-    {
-        int index = course_input[i];
-        if (NeedToLearn(index))
-        {
-            putch(' ');
-            putch(' ');
-            PrintLine(course[index]);
-        }
-        i = i + 1;
-    }
-    // printNeedArray();
+    putchar('\n');
+    putchar('P');
+    putchar('o');
+    putchar('s');
+    putchar('s');
+    putchar('i');
+    putchar('b');
+    putchar('l');
+    putchar('e');
+    putchar(' ');
+    putchar('C');
+    putchar('o');
+    putchar('u');
+    putchar('r');
+    putchar('s');
+    putchar('e');
+    putchar('s');
+    putchar(' ');
+    putchar('t');
+    putchar('o');
+    putchar(' ');
+    putchar('T');
+    putchar('a');
+    putchar('k');
+    putchar('e');
+    putchar(' ');
+    putchar('N');
+    putchar('e');
+    putchar('x');
+    putchar('t');
+    putchar('\n');
+    // printf("\nPossible Courses to Take Next\n");
+    // int i = 1;
+    // while (i <= course_input[0])
+    // {
+    //     int index = course_input[i];
+    //     if (NeedToLearn(index))
+    //     {
+    //         putchar(' ');
+    //         putchar(' ');
+    //         // putchar('[');
+    //         // PrintInt(index);
+    //         // putchar(']');
+    //         PrintLine(course[index]);
+    //     }
+    //     i = i + 1;
+    // }
+    printNeedArray();
     if (credit_remaining == 0)
     {
-        putch(' ');
-        putch(' ');
-        putch('N');
-        putch('o');
-        putch('n');
-        putch('e');
-        putch(' ');
-        putch('-');
-        putch(' ');
-        putch('C');
-        putch('o');
-        putch('n');
-        putch('g');
-        putch('r');
-        putch('a');
-        putch('t');
-        putch('u');
-        putch('l');
-        putch('a');
-        putch('t');
-        putch('i');
-        putch('o');
-        putch('n');
-        putch('s');
-        putch('!');
-        putch(10);
+        putchar(' ');
+        putchar(' ');
+        putchar('N');
+        putchar('o');
+        putchar('n');
+        putchar('e');
+        putchar(' ');
+        putchar('-');
+        putchar(' ');
+        putchar('C');
+        putchar('o');
+        putchar('n');
+        putchar('g');
+        putchar('r');
+        putchar('a');
+        putchar('t');
+        putchar('u');
+        putchar('l');
+        putchar('a');
+        putchar('t');
+        putchar('i');
+        putchar('o');
+        putchar('n');
+        putchar('s');
+        putchar('!');
+        putchar('\n');
         // printf("  None - Congratulations!\n");
     }
     return 0;

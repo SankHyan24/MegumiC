@@ -215,7 +215,7 @@ namespace MC::IR
         // 0是一个针对全局数组的操作
         // 是一个针对局部数组的操作
         // 1并不是第一层了
-        int this_lvl_shape;
+        std::vector<int> this_lvl_shape;
         int Lvl;
         // 层数，shape几层它几层
         // 最少1层
@@ -236,7 +236,7 @@ namespace MC::IR
         // 0是一个针对全局数组的操作
         // 是一个针对局部数组的操作
         // 1并不是第一层了
-        int this_lvl_shape;
+        std::vector<int> this_lvl_shape;
         int Lvl;
         // 层数，shape几层它几层
         // 最少1层
