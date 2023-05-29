@@ -12,6 +12,11 @@ a:
 	./mc; \
 	cd ../
 
+
+b:
+	g++ ./test/sc.cpp -o sc.out; \
+	./sc.out
+
 c:
 	rm hello.o hello.out; \
 	cd build;  \

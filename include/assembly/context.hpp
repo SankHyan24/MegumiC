@@ -76,6 +76,7 @@ namespace MC::ASM
         void end_scope();
 
         Address allocate_address(int size);
+        int rest_address_size();
 
         RV32RegBitMask &getBackBitMask() { return regs_to_be_protected.back(); }
 

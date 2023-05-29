@@ -285,6 +285,7 @@ Stmt
 
 ReturnStmt
 	: RETURN Exp SEMICOLON { $$ = new MC::AST::node::ReturnStatement($2); } ;
+	| RETURN SEMICOLON { $$ = new MC::AST::node::ReturnStatement(new MC::AST::node::NumberAST(0)); } ;
 
 WhileStmt
 	: WHILE '(' Exp ')' Stmt { $$ = new MC::AST::node::WhileStatement($3, $5); } ;

@@ -43,7 +43,7 @@ Char          '[^\\']'
 "ptr"           { return PTR; }/*Key words */
 "const"         { return CONST; }/*Key words */
 "return"        { return RETURN; }
-"function"      { return FUNCTION; }
+"static"      { return FUNCTION; }
 "while"         { return WHILE; }
 "if"            { return IF; }
 "else"          { return ELSE; }

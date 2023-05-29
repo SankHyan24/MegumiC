@@ -2,7 +2,7 @@
 namespace MC::ASM
 {
     int RV32RegUtil::reg_count = 32;
-    int RV32RegUtil::SimmMax = 2047;
+    int RV32RegUtil::SimmMax = 2046;
     std::string RV32RegUtil::get_x_name(int x)
     {
         std::string name("");
@@ -87,17 +87,7 @@ namespace MC::ASM
 
         auto it = table.find(name);
         if (it == table.end())
-        {
-            std::cout << "var table:" << std::endl;
-            for (auto &table : this->var_table)
-            {
-                for (auto &p : table)
-                {
-                    std::cout << p.first << " : " << p.second.get_offset() << std::endl;
-                }
-            }
             throw std::runtime_error("symbol[" + name + "] not found in var table table!");
-        }
         return it->second;
     }
     bool Context::if_in_symbol_table(std::string name)
@@ -114,29 +104,7 @@ namespace MC::ASM
     {
         auto it = this->global_table.find(name);
         if (it == this->global_table.end())
-        {
-            // print the global table and var table
-            {
-                std::cout << "global table:" << std::endl;
-                for (auto &p : this->global_table)
-                {
-                    std::cout << p.first << " : ";
-                    for (auto &v : p.second)
-                        std::cout << v << " ";
-                    std::cout << std::endl;
-                }
-                std::cout << std::endl;
-                std::cout << "var table:" << std::endl;
-                for (auto &table : this->var_table)
-                {
-                    for (auto &p : table)
-                    {
-                        std::cout << p.first << " : " << p.second.get_offset() << std::endl;
-                    }
-                }
-            }
             throw std::runtime_error("symbol[" + name + "] not found in var table and global table!");
-        }
         return it->second;
     }
 
@@ -163,7 +131,14 @@ namespace MC::ASM
             throw std::runtime_error("stack overflow");
         int ret = ptr;
         ptr += byteSize;
-        std::cout << "allocate address:" << ret << std::endl;
         return Address(ret);
     }
+    int Context::rest_address_size()
+    {
+        int res;
+        int ptr = this->stack_allocate_ptr.back();
+        int max_size = this->stack_max_size.back();
+        return max_size - ptr;
+    }
+
 }

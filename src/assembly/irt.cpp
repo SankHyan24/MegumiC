@@ -164,7 +164,7 @@ namespace MC::ASM
     }
     void IRTInst::_generateLV0(Context &ctx, std::ostream &out)
     {
-        out << "\t//" << this->ircode_dst << std::endl;
+        // out << "\t//" << this->ircode_dst << std::endl;
         std::cout << "[" << this->line << "]inst is : " << MC::IR::IROp2String(tag) << " " << std::endl;
         // todo
         ctx.insert_type(this->getNewVarName(), this->tag);
@@ -172,7 +172,7 @@ namespace MC::ASM
         {
             Address addr = ctx.allocate_address(1);
             ctx.insert_symbol(this->getNewVarName(), addr);
-            out << "//\t insert [" << this->getNewVarName() << "," << MC::IR::IROp2String(tag) << "] into symbol table, at" << std::to_string(addr.get_offset()) << std::endl;
+            // out << "//\t insert [" << this->getNewVarName() << "," << MC::IR::IROp2String(tag) << "] into symbol table, at" << std::to_string(addr.get_offset()) << std::endl;
         }
         switch (tag)
         {
@@ -181,7 +181,8 @@ namespace MC::ASM
             // protect the register
             int arg_count = this->params_name.size();
             std::cout << "arg count is " << arg_count << std::endl;
-            for (int i = 0, j = 0; i < RV32RegUtil::reg_count && j < arg_count; i++)
+            // for (int i = 0, j = 0; i < RV32RegUtil::reg_count && j < arg_count; i++)
+            for (int i = 0, j = 0; i < RV32RegUtil::reg_count; i++)
                 if (ctx.getBackBitMask().is_true(i))
                 {
                     j++;
@@ -223,7 +224,8 @@ namespace MC::ASM
                 out << "\tsw a0, 0(t4)" << std::endl;
             }
             // restore the register
-            for (int i = 0, j = 0; i < RV32RegUtil::reg_count && j < arg_count; i++)
+            // for (int i = 0, j = 0; i < RV32RegUtil::reg_count && j < arg_count; i++)
+            for (int i = 0, j = 0; i < RV32RegUtil::reg_count; i++)
                 if (ctx.getBackBitMask().is_true(i))
                 {
                     j++;
@@ -708,7 +710,7 @@ namespace MC::ASM
             throw std::runtime_error("Unexpected ir inst type");
             break;
         }
-        out << std::endl;
+        // out << std::endl;
     }
     void IRTBasicBlock::_generateLV0(Context &ctx, std::ostream &out)
     {
@@ -787,6 +789,7 @@ namespace MC::ASM
         for (auto &i : bbList)
             i->generate(ctx, out);
         // release the stack
+        std::cout << " stack rest :" << ctx.rest_address_size() << std::endl;
         ctx.this_function_stack_size = 0;
         ctx.end_scope();
     }
