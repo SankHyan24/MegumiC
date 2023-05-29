@@ -15,11 +15,8 @@ using namespace std;
 int main(int argc, const char *argv[])
 {
 	MC::config::Config config(argc, argv);
-
-	FILE *inputFile = fopen(config.inputFile.c_str(), "r");
-
 	// generate ast here
-	auto ast = MC::AST::node::generate(inputFile);
+	auto ast = MC::AST::node::generate(config.getInputCode());
 	// ast->Dump();
 
 	// generate ir here

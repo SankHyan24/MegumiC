@@ -445,8 +445,8 @@ namespace MC::ASM
                 out << "\tadd t4, t4, sp" << std::endl;
                 out << "\tlw t0, 0(t4)" << std::endl;
             }
-            out << "\tbeq t0, zero, " << elseLabel << std::endl;
-            out << "\tj " << ifLabel << std::endl;
+            out << "\tbne t0, zero, " << ifLabel << std::endl;
+            out << "\tj " << elseLabel << std::endl;
             break;
         }
         case MC::IR::IROp::Jump:

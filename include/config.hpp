@@ -31,10 +31,17 @@ namespace MC::config
         std::string irOutputFile;
         std::string targetOutputFile;
 
+        // precode
+        bool if_use_precode{false};
+        std::string precode_path{"../test/pre.c"};
+        std::string pre_code;
+        std::string input_code;
         Config(int argc, const char *argv[]);
         ~Config();
         std::ostream &getTargetOutputFileStream();
         std::ostream &getirOutputFileStream();
+        std::string &getPreCode();
+        std::string &getInputCode();
 
     private:
         std::ofstream targetOutputFileStream;
