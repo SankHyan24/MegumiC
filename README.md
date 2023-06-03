@@ -1,15 +1,19 @@
 # Megumi C Language Compiler
 
 > ある春の日、俺は“運命”と出逢った……
+
 Megumi C is a subset of C language. I call it `Megumi C` because **I love Kato Megumi**.😎
 
 MegumiC is a compiler I implemented in the Compilers Principle course of Computer Science, Zhejiang University.
 
 The IR code I used refers to [Koopa IR](https://pku-minic.github.io/online-doc/#/misc-app-ref/koopa) from pku-minic.
 
+The Target code is RV32.
+
 ## Dependencies
 - [Flex]()
 - [Bison]()
+- [sysy-runtime-lib](https://github.com/pku-minic/sysy-runtime-lib/)
 
 ## Features
 1. Token: A C program is a sequence of tokens.
@@ -44,21 +48,24 @@ The IR code I used refers to [Koopa IR](https://pku-minic.github.io/online-doc/#
         - Function can be recursively called
 
 ## A simple Megumi C program
-A simple [QuickSort program](https://github.com/SankHyan24/MegumiC/blob/main/test/task1.c) written in Megumi C.
-
 ```c
-// ...
-static int main()
+static int PrintArr(int a[100], int n)
 {
-	n = ReadInt();
-	int i = 1;
-	while (i <= n)
+	int i = 0;
+	while (i < n)
 	{
-		aa[i] = ReadInt();
+		putch(a[i]);
 		i = i + 1;
 	}
-	Quicksort(aa, 1, n);
-	PrintArr(aa, n);
+	return 0;
+}
+// print Hello, world!
+static int main()
+{
+	int n[15] = {'H', 'e', 'l', 'l', 'o', ',', ' ', 'w', 'o', 'r', 'l', 'd', '!', 10};
+	PrintArr(n, 14);
 	return 0;
 }
 ```
+
+A simple [QuickSort program](https://github.com/SankHyan24/MegumiC/blob/main/test/task1.c) written in Megumi C.
