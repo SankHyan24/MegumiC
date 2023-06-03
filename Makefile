@@ -1,7 +1,19 @@
 
 build_bin:
-	clang test/a.s -c -o hello.o -target riscv32-unknown-linux-elf -march=rv32im -mabi=ilp32 ; \
-	ld.lld hello.o -L${CDE_LIBRARY_PATH}/riscv32 -lsysy -o hello.out; \
+	clang test/a.s -c -o test.o -target riscv32-unknown-linux-elf -march=rv32im -mabi=ilp32 ; \
+	ld.lld test.o -L${CDE_LIBRARY_PATH}/riscv32 -lsysy -o test.out; \
+
+
+
+file:
+	make clean; \
+	cd build;  \
+	make;  \
+	./mc ../test/${scf}; \
+	cd ../
+	make build_bin
+	qemu-riscv32-static ./test.out
+	make clean
 
 test1: 
 	make clean; \

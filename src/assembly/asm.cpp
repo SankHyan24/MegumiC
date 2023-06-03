@@ -44,8 +44,11 @@ namespace MC::ASM
         std::ostream out(this->buffer.rdbuf());
         Context ctx;
         this->irt->generate(ctx, out);
+    }
 
-        // std::cout << this->buffer.str() << std::endl;
+    std::string AssemblyList::getString()
+    {
+        return this->buffer.str();
     }
 
     void AssemblyList::Dump(std::ostream &out)

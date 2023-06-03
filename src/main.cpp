@@ -9,6 +9,7 @@
 #include <ast/generate.hpp>
 #include <ir/generate.hpp>
 #include <assembly/generate.hpp>
+#include <optimizer/opt.hpp>
 
 using namespace std;
 
@@ -30,6 +31,9 @@ int main(int argc, const char *argv[])
 	auto assembly = MC::ASM::generate(ir);
 	assembly->Dump(config.getTargetOutputFileStream());
 	// assembly->Dump();
+
+	// optimize assembly here
+	MC::ASM::OPT::OptimizerPipeline opter;
 
 	std::cout << "done" << std::endl;
 

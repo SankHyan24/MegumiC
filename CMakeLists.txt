@@ -48,5 +48,6 @@ target_sources(${_EXE_NAME_} PUBLIC ${_SOURCE_})
 target_include_directories(${_EXE_NAME_} PUBLIC ${_SRC_FILE_NAME_} ${INC_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 set_target_properties(${_EXE_NAME_} PROPERTIES C_STANDARD 11 CXX_STANDARD 17)
-target_link_libraries(${_EXE_NAME_} koopa pthread dl)
+target_link_libraries(${_EXE_NAME_} pthread dl)
+# target_link_libraries(${_EXE_NAME_} koopa pthread dl)
 add_subdirectory(${_SRC_FILE_NAME_})

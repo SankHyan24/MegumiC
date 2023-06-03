@@ -10,7 +10,7 @@
 namespace MC::ASM
 {
 
-    // AssemblyList is read the ircode from the ircodelist, then generate the ir tree by the generate method
+       // AssemblyList is read the ircode from the ircodelist, then generate the ir tree by the generate method
     // after that, generate the target code from the ir tree
     class AssemblyList
     {
@@ -27,11 +27,11 @@ namespace MC::ASM
         void Generate();
         void generateIRTreeFromIRCodeList();
         void Dump(std::ostream &out = std::cout);
+        std::string getString();
 
     private:
         IRTFunction *_IRT_generate_function(int &codeindex);
         IRTBasicBlock *_IRT_generate_basicblock(int &codeindex);
         IRTInst *_IRT_generate_inst(int &codeindex);
     };
-
 }

@@ -5,9 +5,8 @@
 #include <vector>
 #include <iostream>
 #include <bitset>
-#include <ir/ir.hpp>
 
-// #include <assembly/asm.hpp>
+#include <ir/ir.hpp>
 
 namespace MC::ASM
 {
@@ -40,6 +39,7 @@ namespace MC::ASM
     private:
         int sp_offset;
     };
+
     class Context
     {
     public:

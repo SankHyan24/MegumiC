@@ -15,7 +15,6 @@ namespace MC::config
         Compile  // -c
 
     }; // default -c
-
     enum class StartMode
     {
         MC, // -mc from MC
@@ -59,7 +58,7 @@ namespace MC::config
         EndMode end_mode{EndMode::RV32};
         OptMode opt_mode{OptMode::None};
         // input file name
-        std::string input_file{"../test/task4.c"};
+        std::string input_file{"../test/task0.c"};
         // output file name
         std::string ir_output_file{"../test/a.ir"};
         std::string target_output_file{"../test/a.s"};
