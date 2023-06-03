@@ -9,7 +9,9 @@
 #include <ast/generate.hpp>
 #include <ir/generate.hpp>
 #include <assembly/generate.hpp>
+#include <optimizer/generate.hpp>
 #include <optimizer/opt.hpp>
+#include <optimizer/asmcode.hpp>
 
 using namespace std;
 
@@ -18,24 +20,24 @@ int main(int argc, const char *argv[])
 	MC::config::Config config(argc, argv);
 	if (!config.configInfo())
 		return 0;
+
 	// generate ast here
 	auto ast = MC::AST::node::generate(config.getInputCode());
-	// ast->Dump();
 
 	// generate ir here
 	auto ir = MC::IR::generate(ast);
-	ir->Dump(config.getirOutputFileStream());
-	// ir->Dump();
+	if (config.getEndMode() == MC::config::EndMode::IR)
+	{
+		ir->Dump(config.getirOutputFileStream());
+		return 0;
+	}
 
 	// generate assembly here
 	auto assembly = MC::ASM::generate(ir);
-	assembly->Dump(config.getTargetOutputFileStream());
-	// assembly->Dump();
 
 	// optimize assembly here
-	MC::ASM::OPT::OptimizerPipeline opter;
-
-	std::cout << "done" << std::endl;
+	auto asmfile = MC::OPT::generate(assembly->getString(), config.getOptMode());
+	assembly->Dump(config.getTargetOutputFileStream());
 
 	return 0;
 }

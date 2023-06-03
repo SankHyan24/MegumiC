@@ -2,8 +2,9 @@
 #include <assembly/irt.hpp>
 #include <ir/ir.hpp>
 
-namespace MC::ASM
-{
+namespace
+{ // util functions
+    using namespace MC::ASM;
     void _load_var_to_reg(Context &ctx, std::ostream &out, std::string varName, int offset, int reg_num)
     {
         try
@@ -76,6 +77,11 @@ namespace MC::ASM
             out << "\tsw " << RV32RegUtil::get_x_name(reg_num) << ", " << offset << "(t0)" << std::endl;
         }
     }
+
+}
+
+namespace MC::ASM
+{
 
     std::unique_ptr<AssemblyList> generate(std::unique_ptr<MC::IR::IRListWrapper> &irs, std::ostream &out)
     {
@@ -674,7 +680,7 @@ namespace MC::ASM
         ctx.insert_symbol("reg_ra", raAddr);
         ctx.insert_type("reg_ra", MC::IR::IROp::FuncDef);
         if (raAddr.get_offset() < RV32RegUtil::SimmMax)
-            out << "\tsw\tra," << raAddr.get_offset() << "(sp)" << std::endl;
+            out << "\tsw ra," << raAddr.get_offset() << "(sp)" << std::endl;
         else
         {
             out << "\tli t4," << raAddr.get_offset() << std::endl;
@@ -706,12 +712,12 @@ namespace MC::ASM
                 throw std::runtime_error("too many arguments");
             }
             if (tmpAddr.get_offset() < RV32RegUtil::SimmMax)
-                out << "\tsw\t" << RV32RegUtil::get_x_name(regid) << "," << tmpAddr.get_offset() << "(sp)" << std::endl;
+                out << "\tsw " << RV32RegUtil::get_x_name(regid) << "," << tmpAddr.get_offset() << "(sp)" << std::endl;
             else
             {
                 out << "\tli t4," << tmpAddr.get_offset() << std::endl;
                 out << "\tadd t4, t4, sp" << std::endl;
-                out << "\tsw\t" << RV32RegUtil::get_x_name(regid) << ",0(t4)" << std::endl;
+                out << "\tsw " << RV32RegUtil::get_x_name(regid) << ",0(t4)" << std::endl;
             }
         }
         // function body

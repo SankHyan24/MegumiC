@@ -1,28 +1,20 @@
 // Use Peehole optimizer to optimize the Target code
+#pragma once
 #include <iostream>
 #include <vector>
-#pragma once
 #include <memory>
+#include <optimizer/asmcode.hpp>
 
-namespace MC::ASM::OPT
+namespace MC::OPT
 {
 
     class Optimizer
     {
     public:
-        std::string pre_opt_code;
-        std::string after_opt_code;
-        std::string executeOptimizer(std::string code);
+        void executeOptimizer(std::vector<AsmCode> &pre_opt_codes);
 
     private:
-        virtual std::string _executeOptimizer();
-    };
-
-    class PeepholeOptimizer : public Optimizer
-    {
-    public:
-    private:
-        virtual std::string _executeOptimizer() override;
+        virtual void _executeOptimizer(std::vector<AsmCode> &pre_opt_codes);
     };
 
     class OptimizerPipeline
@@ -30,12 +22,10 @@ namespace MC::ASM::OPT
     public:
         OptimizerPipeline(){};
         void addOptimizer(Optimizer *optimizer);
-        std::string executeOptimizers();
+        void executeOptimizers(std::vector<AsmCode> &pre_opt_codes);
 
     private:
         std::vector<std::unique_ptr<Optimizer>> opt_pipline;
-        std::string pre_opt_code;
-        std::string after_opt_code;
     };
 
 }

@@ -61,8 +61,8 @@ namespace MC::config::util
     {
         switch (mode)
         {
-        case MC::config::OptMode::None:
-            return "None";
+        case MC::config::OptMode::NONE:
+            return "NONE";
         case MC::config::OptMode::O1:
             return "O1";
         case MC::config::OptMode::O2:
@@ -84,6 +84,7 @@ namespace MC::config
         openFileStream();
         if (!correct_input)
             first_mode = FirstMode::Help;
+        std::cout << color::GREEN << "Start" << color::RESET << std::endl;
     }
     void Config::parse(int argc, const char *argv[])
     {
@@ -126,6 +127,7 @@ namespace MC::config
         bool first_option{true};
         for (auto &option : options)
         {
+            // std::cout << "options: " << options.size() << std::endl;
             if (!(option.compare("-v") && option.compare("-h") && option.compare("-c")))
             {
                 first_option = false;
@@ -154,7 +156,7 @@ namespace MC::config
                 opt_mode_set = true;
                 continue;
             }
-            if (first_option)
+            if (first_option && option[0] != '-')
             {
                 correct_input = true;
                 start_mode_set = true;
@@ -174,7 +176,7 @@ namespace MC::config
         {
             std::string option = option_pair.first;
             std::string value = option_pair.second;
-            if (!(option.compare("-mc") || option.compare("-irc")))
+            if (!(option.compare("-mc") && option.compare("-irc")))
             {
                 if (start_mode_set)
                 {
@@ -184,10 +186,17 @@ namespace MC::config
                     return;
                 }
                 start_mode = option.compare("-mc") ? StartMode::IR : StartMode::MC;
+                if (start_mode == StartMode::IR)
+                {
+                    correct_input = false;
+                    std::cout << color::RED << "Wrong input args" << color::RESET << ": [" << color::CYAN << option << color::RESET << "]" << std::endl;
+                    std::cout << "  IR mode is not implemented" << std::endl;
+                }
+                input_file = value;
                 start_mode_set = true;
                 continue;
             }
-            if (!(option.compare("-ir") || option.compare("-s") || option.compare("-bin")))
+            if (!(option.compare("-ir") && option.compare("-s") && option.compare("-bin")))
             {
                 if (end_mode_set)
                 {
@@ -198,6 +207,17 @@ namespace MC::config
                 }
                 end_mode = option.compare("-ir") ? (option.compare("-s") ? EndMode::Bin : EndMode::RV32) : EndMode::IR;
                 end_mode_set = true;
+                if (end_mode == EndMode::Bin)
+                {
+                    correct_input = false;
+                    std::cout << color::RED << "Wrong input args" << color::RESET << ": [" << color::CYAN << option << color::RESET << "]" << std::endl;
+                    std::cout << "  Bin mode is not implemented" << std::endl;
+                    return;
+                }
+                else if (end_mode == EndMode::RV32)
+                    target_output_file = value;
+                else if (end_mode == EndMode::IR)
+                    ir_output_file = value;
             }
             else
             {
@@ -208,6 +228,20 @@ namespace MC::config
                 return;
             }
         }
+        if (!correct_input)
+            return;
+        if (!first_mode_set)
+            std::cout << color::YELLOW << "Warning" << color::RESET << ": No first mode set. Use default mode: " << color::BLUE << util::FirstMode2Str(first_mode) << color::RESET << std::endl;
+        if (!start_mode_set)
+            std::cout << color::YELLOW << "Warning" << color::RESET << ": No start mode set. Use default mode: " << color::BLUE << util::StartMode2Str(start_mode) << color::RESET
+                      << " Using default input file path [" << color::BLUE << this->input_file << color::RESET << "]" << std::endl;
+        if (!end_mode_set)
+            std::cout << color::YELLOW << "Warning" << color::RESET << ": No end mode set. Use default mode: " << color::BLUE << util::EndMode2Str(end_mode) << color::RESET
+                      << " Using default output file path [" << color::BLUE << this->target_output_file << color::RESET << "]" << std::endl;
+        if (!opt_mode_set)
+            std::cout << color::YELLOW << "Warning" << color::RESET << ": No optimization mode set. Use default mode: " << color::BLUE << util::OptMode2Str(opt_mode) << color::RESET << std::endl;
+        if (!first_mode_set || !start_mode_set || !end_mode_set || !opt_mode_set)
+            std::cout << "  You can use -h to get help" << std::endl;
     }
     void Config::openFileStream()
     {
@@ -219,10 +253,10 @@ namespace MC::config
         irOutputFileStream.close();
         targetOutputFileStream.close();
     }
-
     Config::~Config()
     {
         closeFileStream();
+        std::cout << color::GREEN << "Done" << color::RESET << std::endl;
     }
     bool Config::configInfo(std::ostream &out) const
     {
@@ -235,18 +269,19 @@ namespace MC::config
                "  -irc\t\t\tCompile from IR. \tFollowed by the input file path.\n" +
                "  -ir\t\t\tOutput IR code. \tFollowed by the output file path.\n" +
                "  -s\t\t\tOutput RV32 code. \tFollowed by the output file path.\n" +
-               "  -bin\t\t\tOutput binary code. \tFollowed by the output file path.\n" +
+               //    "  -bin\t\t\tOutput binary code. \tFollowed by the output file path.\n" +
                "  -O0\t\t\tNo optimization\n" +
                "  -O1\t\t\tOptimization level 1\n" +
                "  -O2\t\t\tOptimization level 2\n" +
-               "  -O3\t\t\tOptimization level 3\n" +
-               "  -pre\t\t\tUse precode. \tFollowed by the precode file path.\n";
+               "  -O3\t\t\tOptimization level 3\n";
+        //     +
+        //    "  -pre\t\t\tUse precode. \tFollowed by the precode file path.\n";
         if (first_mode == MC::config::FirstMode::Version)
-            out << "Version: 0.0.1";
+            out << "Version: 0.0.1\n";
         else if (first_mode == MC::config::FirstMode::Help)
             out << "Help:\n"
                 << help;
-        return correct_input;
+        return correct_input && first_mode == MC::config::FirstMode::Compile;
     }
 
     std::string &Config::getPreCode()
