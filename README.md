@@ -1,5 +1,7 @@
 # Megumi C Language Compiler
 
+[![CMake](https://github.com/SankHyan24/MegumiC/actions/workflows/cmake.yml/badge.svg)](https://github.com/SankHyan24/MegumiC/actions/workflows/cmake.yml)
+
 > ある春の日、俺は“運命”と出逢った……
 
 Megumi C is a subset of C language. I call it `Megumi C` because **I love Kato Megumi**.😎
