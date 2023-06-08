@@ -2,7 +2,7 @@
 build/
 *.s
 *.ir
-tester/
+# tester/
 
 
 # Prerequisites
