@@ -1,4 +1,8 @@
-## 只需修改前三行
+cmake_minimum_required(VERSION 3.15)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+
 set(_PROJECT_NAME_ "Megumi C") # 设置project的名字
 set(_EXE_NAME_ "mc") # 设置target的名字
 set(_SRC_FILE_NAME_ "src") # 设置target源代码所在的位置
@@ -38,10 +42,8 @@ link_directories(${LIB_DIR})
 set(SOURCES 
             ${FLEX_Lexer_OUTPUTS} ${BISON_Parser_OUTPUT_SOURCE})
 
-cmake_minimum_required(VERSION 3.15)
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
+
 add_executable(${_EXE_NAME_} ${SOURCES})
 aux_source_directory(${_SRC_FILE_NAME_} _SOURCE_)
 target_sources(${_EXE_NAME_} PUBLIC ${_SOURCE_})
