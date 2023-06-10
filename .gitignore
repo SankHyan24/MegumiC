@@ -3,6 +3,7 @@ build/
 demo/build/**
 demo/www/mc.js
 demo/www/mc.wasm
+emsdk/
 *.s
 *.ir
 # tester/
