@@ -54,9 +54,6 @@
                     <el-divider direction="vertical"></el-divider>
                     <div class="half">
                         <el-collapse v-model="activeNames">
-                            <el-collapse-item title="AST" name="1">
-                                <el-tree default-expand-all :data="ast"></el-tree>
-                            </el-collapse-item>
                             <el-collapse-item title="IR" name="2">
                                 <div style="white-space:break-spaces;font-family:consolas;">{{ir}}</div>
                             </el-collapse-item>
@@ -75,24 +72,38 @@
                 </div>
             </el-main>
             <el-footer style="text-align:center">
-                Copyright (C) 2020-2021 Charles Sun
+                ©2021 - 2023 By <a href="https://scitbb.top/">Charles Sun</a>
             </el-footer>
         </el-container>
     </div>
     <script>
+        var ir_line = 0;
+        var asm_line = 0;
+        var ir_end_mark = false;
         var Module = {
             noInitialRun: true,
-            print: msg => app.$data.assembly += msg + '\n',
-            printErr(msg) {
-                msg = '' + msg;
-                if (msg.startsWith('└') || msg.startsWith('│')) {
-                    app.addAstNode(msg);
+            print(msg) {
+                // util ===
+                if (msg.startsWith('====')) {
+                    ir_end_mark = true;
+                    return;
+                }
+                if (ir_end_mark) {
+                    asm_line++;
+                    app.$data.assembly += msg + '\n';
                 } else {
-                    app.$data.ir += msg + '\n'
+                    ir_line++;
+                    app.$data.ir += msg + '\n';
                 }
             },
+            printErr(msg) {
+                msg = '' + msg;
+                app.$data.ir += msg + '\n'
+            },
             onRuntimeInitialized() {
+                ir_end_mark = false;
                 app.compile();
+
             },
             setStatus(status) {
                 app.$data.status = status;
@@ -132,7 +143,6 @@ static int main()
 `,
                 assembly: '',
                 showComment: false,
-                ast: [{ label: '...' }],
                 cur: null,
                 curLevel: 1,
                 ir: '',
@@ -140,7 +150,7 @@ static int main()
             },
             computed: {
                 assemblyWithoutComment() {
-                    return this.assembly.replace(/^#[^\n]*\n?/msg, '');
+                    return this.assembly.replace(/\/\/.*/g, '');
                 }
             },
             mounted() {
@@ -165,42 +175,27 @@ static int main()
             },
             methods: {
                 compile() {
+                    ir_line = 0;
+                    asm_line = 0;
+
                     this.assembly = '';
                     this.ir = '';
-                    this.ast = [{ label: '...' }];
-                    this.cur = this.ast[0];
-                    this.curLevel = 1;
                     const filename = 'input';
                     this.code = this.editor?.getValue() ?? this.code;
-                    try { Module.FS.unlink('/' + filename); } catch (e) { }
-                    Module.FS.createDataFile('/', filename, this.code, 1, 1, 1);
+                    ir_end_mark = false;
+
+                    try { FS.unlink('/' + filename); } catch (e) { }
+                    FS.createDataFile('/', filename, this.code, 1, 1, 1);
                     args = ['-o', '/' + filename];
                     if (this.optimization) args.push('-O1');
-                    const ret = Module.callMain(args);
-                    Module.FS.unlink('/' + filename);
+                    const ret = callMain(args);
+                    FS.unlink('/' + filename);
                     if (ret !== 0) {
                         this.ast = [{ label: 'Error' }];
                         this.assembly = this.ir;
                     }
-                },
-                addAstNode(msg) {
-                    let level = msg.match(/│|└|├/g).length;
-                    msg = msg.replace(/│|└|├|──/g, '').trim();
-                    if (level == 1) {
-                        this.ast = [{ label: msg }];
-                        this.cur = this.ast[0];
-                    } else {
-                        while (level <= this.curLevel) {
-                            if (this.cur.father) this.cur = this.cur.father;
-                            else this.cur = this.ast[0];
-                            this.curLevel--;
-                        }
-                        this.cur.children = this.cur.children || [];
-                        this.cur.children.push({ label: msg, father: this.cur })
-                        this.cur = this.cur.children[this.cur.children.length - 1];
-
-                    }
-                    this.curLevel = level;
+                    app.$data.ir = "IR: \t" + ir_line + " lines\n" + app.$data.ir;
+                    app.$data.assembly = "Assembly: \t" + asm_line + " lines\n" + app.$data.assembly;
                 }
             }
         });
