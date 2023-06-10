@@ -1,5 +1,8 @@
 .vscode/
 build/
+demo/build/**
+demo/www/mc.js
+demo/www/mc.wasm
 *.s
 *.ir
 # tester/
