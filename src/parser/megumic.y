@@ -145,11 +145,11 @@ CompUnit
 		((MC::AST::node::CompUnitAST*)(ast.get()))->list.push_back(std::unique_ptr<MC::AST::node::FunctionDefine>());
 		((MC::AST::node::CompUnitAST*)(ast.get()))->list.back().reset($<function_def>2);
 	}	| Decl { 
-		ast = move(make_unique<MC::AST::node::CompUnitAST>());
+		ast = std::move(make_unique<MC::AST::node::CompUnitAST>());
 		((MC::AST::node::CompUnitAST*)(ast.get()))->list.push_back(std::unique_ptr<MC::AST::node::DeclareStatement>());
 		((MC::AST::node::CompUnitAST*)(ast.get()))->list.back().reset($1);
 	}	| FuncDef { 
-		ast = move(make_unique<MC::AST::node::CompUnitAST>());
+		ast = std::move(make_unique<MC::AST::node::CompUnitAST>());
 		((MC::AST::node::CompUnitAST*)(ast.get()))->list.push_back(std::unique_ptr<MC::AST::node::FunctionDefine>());
 		((MC::AST::node::CompUnitAST*)(ast.get()))->list.back().reset($<function_def>1);
 	};
