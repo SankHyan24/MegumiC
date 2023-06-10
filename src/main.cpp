@@ -13,22 +13,23 @@
 #include <optimizer/opt.hpp>
 #include <optimizer/asmcode.hpp>
 
-using namespace std;
+MC::config::Config *MC::config::config = nullptr;
 
+using namespace std;
 int main(int argc, const char *argv[])
 {
-	MC::config::Config config(argc, argv);
-	if (!config.configInfo())
+	MC::config::config = new MC::config::Config(argc, argv);
+	if (!MC::config::config->configInfo())
 		return 0;
 
 	// generate ast here
-	auto ast = MC::AST::node::generate(config.getInputCode());
+	auto ast = MC::AST::node::generate(MC::config::config->getInputCode());
 
 	// generate ir here
 	auto ir = MC::IR::generate(ast);
-	if (config.getEndMode() == MC::config::EndMode::IR)
+	if (MC::config::config->getEndMode() == MC::config::EndMode::IR)
 	{
-		ir->Dump(config.getirOutputFileStream());
+		ir->Dump(MC::config::config->getirOutputFileStream());
 		return 0;
 	}
 
@@ -36,8 +37,8 @@ int main(int argc, const char *argv[])
 	auto assembly = MC::ASM::generate(ir);
 
 	// optimize assembly here
-	auto asmfile = MC::OPT::generate(assembly->getString(), config.getOptMode());
-	assembly->Dump(config.getTargetOutputFileStream());
+	auto asmfile = MC::OPT::generate(assembly->getString(), MC::config::config->getOptMode());
+	assembly->Dump(MC::config::config->getTargetOutputFileStream());
 
 	return 0;
 }

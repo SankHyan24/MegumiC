@@ -2,23 +2,63 @@
 	#include <memory>
 	#include <string>
 	#include "ast/ast.hpp"
-
 }
 
 %{
-
+#include "megumic.tab.hpp"
 #include <iostream>
 #include <memory>
 #include <string>
-#include "ast/ast.hpp"
+#include <ast/ast.hpp>
+#include <config.hpp>
+using namespace std;
+extern int yydebug;
+
+extern int yylex();
+extern int yyget_lineno();
+extern int yylex_destroy();
 
 // 声明 lexer 函数和错误处理函数
 int yylex();
-void yyerror(std::unique_ptr<MC::AST::node::BaseAST> &ast, const char *s);
-
-using namespace std;
-
+void yyerror(std::unique_ptr<MC::AST::node::BaseAST> &ast, const char *s){
+	    std::cerr << MC::config::config->getInputFile() << ':'<< yylloc.first_line << ':'
+              << yylloc.first_column << ": error: " << s << std::endl;
+    yylex_destroy();
+    if (!yydebug) std::exit(1);
+}
+#define YYERROR_VERBOSE true
+#define YYERROR_VERBOSE true
+#ifdef YYDEBUG
+#undef YYDEBUG
+#endif
+#define YYDEBUG 1
+#define YYLLOC_DEFAULT(Current, Rhs, N)                               \
+    do {                                                              \
+        if (N) {                                                      \
+            (Current).first_line   = YYRHSLOC (Rhs, 1).first_line;    \
+            (Current).first_column = YYRHSLOC (Rhs, 1).first_column;  \
+            (Current).last_line    = YYRHSLOC (Rhs, N).last_line;     \
+            (Current).last_column  = YYRHSLOC (Rhs, N).last_column;   \
+        } else {                                                      \
+            (Current).first_line   = (Current).last_line   =          \
+              YYRHSLOC (Rhs, 0).last_line;                            \
+            (Current).first_column = (Current).last_column =          \
+              YYRHSLOC (Rhs, 0).last_column;                          \
+        }                                                             \
+        yylloc = Current;                                             \
+    } while (0)
+#define yytnamerr(_yyres, _yystr)                                         \
+        ([](char* yyres, const char* yystr) {                             \
+            if (*yystr == '"') {                                          \
+                if (yyres) return yystpcpy(yyres, yystr + 1) - yyres - 1; \
+                else return yystrlen(yystr) - 2;                          \
+            } else {                                                      \
+                if (yyres) return yystpcpy(yyres, yystr) - yyres;         \
+                else return yystrlen(yystr);                              \
+            }                                                             \
+        })(_yyres, _yystr)
 %}
+
 
 // 定义 parser 函数和错误处理函数的附加参数
 // 我们需要返回一个字符串作为 AST, 所以我们把附加参数定义成字符串的智能指针
@@ -29,7 +69,7 @@ using namespace std;
 // 之前我们在 lexer 中用到的 str_val 和 int_val 就是在这里被定义的
 // 至于为什么要用字符串指针而不直接用 string 或者 unique_ptr<string>?
 // 请自行 STFW 在 union 里写一个带析构函数的类会出现什么情况
-
+%locations
 
 %union {
 	int token;
@@ -383,10 +423,4 @@ ArrayItem
 		$$->index_list.back().reset($3);
 	};
 %%
-
-void yyerror(unique_ptr<MC::AST::node::BaseAST> &ast, const char *s) {
-	cerr << "error: " << s << endl;
-}
-
-
 

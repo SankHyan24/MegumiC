@@ -1,22 +1,36 @@
 %option noyywrap
-%option nounput
-%option noinput
 
 %{
 
 #include <cstdlib>
 #include <string>
 
+// %option noinput
+// %option nounput
 // 因为 Flex 会用到 Bison 中关于 token 的定义
 // 所以需要 include Bison 生成的头文件
 
-// "<"             { return LT_OP;}
-// ">"             { return GT_OP;}
-// "="             { return ASSIGN;}
+
 #include "megumic.tab.hpp"
 
 using namespace std;
 
+void yyerror(const char *s);
+int yycolumn = 1;
+
+
+#define YY_USER_ACTION yylloc.first_line = yylineno;            \
+                       yylloc.first_column = yycolumn;          \
+                       for (auto i : std::string(yytext_ptr)) { \
+                           if (i == '\n') {                     \
+                               yylineno++;                      \
+                               yycolumn = 1;                    \
+                           } else {                             \
+                               yycolumn++;                      \
+                           }                                    \
+                       }                                        \
+                       yylloc.last_line = yylineno;             \
+                       yylloc.last_column = yycolumn - 1;
 %}
 
 /* 空白符和注释 */
@@ -38,6 +52,20 @@ Char          '[^\\']'
 
 {WhiteSpace}    { /* 忽略, 不做任何操作 */ }
 {LineComment}   { /* 忽略, 不做任何操作 */ }
+"/*"                        		{
+                                        int c;
+                                        while((c = yyinput()) != 0) {
+                                            if(c == '\n') {
+                                                yylineno++;
+                                                yycolumn = 1;
+                                            } else if(c == '*') {
+                                                if((c = yyinput()) == '/')
+                                                    break;
+                                                else
+                                                    unput(c);
+                                                }
+                                        }
+                                    }
 
 "int"           { return INT; }/*Key words */
 "ptr"           { return PTR; }/*Key words */
