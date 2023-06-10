@@ -5,16 +5,17 @@
 #include <iostream>
 #include <vector>
 #include <string>
-
 namespace MC::config
 {
+
+    // classes
     enum class FirstMode
     {
         Version, // -v
         Help,    // -h
-        Compile  // -c
-
-    }; // default -c
+        Compile, // -c
+        Online   // -o
+    };           // default -c
     enum class StartMode
     {
         MC, // -mc from MC
@@ -48,10 +49,13 @@ namespace MC::config
         std::ostream &getirOutputFileStream();
         std::string &getPreCode();
         std::string &getInputCode();
+
+        std::string getInputFile() const { return this->input_file; }
         FirstMode getFirstMode() const { return this->first_mode; }
         StartMode getStartMode() const { return this->start_mode; }
         EndMode getEndMode() const { return this->end_mode; }
         OptMode getOptMode() const { return this->opt_mode; }
+        void printOnlineSeprarator() const { std::cout << "======================" << std::endl; }
 
         bool configInfo(std::ostream &out = std::cout) const;
 
@@ -63,7 +67,7 @@ namespace MC::config
         EndMode end_mode{EndMode::RV32};
         OptMode opt_mode{OptMode::NONE};
         // input file name
-        std::string input_file{"../test/task3.c"};
+        std::string input_file{"../test/task0.c"};
         // output file name
         std::string ir_output_file{"../test/a.ir"};
         std::string target_output_file{"../test/a.s"};
@@ -78,5 +82,13 @@ namespace MC::config
 
         std::ofstream targetOutputFileStream;
         std::ofstream irOutputFileStream;
+
+        // if output
+        bool if_output{true};
     };
+    // variables
+    extern std::ostream *output;
+    extern std::ostream *log;
+    extern MC::config::Config *config;
+    extern bool print_ir_line_number;
 }

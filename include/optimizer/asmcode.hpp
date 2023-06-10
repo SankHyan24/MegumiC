@@ -65,7 +65,16 @@ namespace MC::OPT
         std::string getArg2() const { return this->arg2; }
         std::string getArg3() const { return this->arg3; }
 
+        std::string getComment() const { return this->comment; }
+        std::string AddComment(std::string comment) { return this->comment += comment; }
+
     private:
+        std::string getCommentStr2Inst() const
+        {
+            if (this->comment.size() == 0)
+                return "";
+            return "\t//" + this->comment;
+        }
         AsmOp op;
         // xxx:
         std::string label;

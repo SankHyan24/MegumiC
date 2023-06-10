@@ -179,40 +179,51 @@ namespace MC::OPT
             // out << "\t//" << this->comment << std::endl;
             break;
         case AsmOp::LABEL:
-            out << this->label << ":" << std::endl;
+            out << this->label << ":"
+                << getCommentStr2Inst() << std::endl;
             break;
         case AsmOp::ASM:
-            out << "\t." << this->asmstr << (this->asmstr_arg.size() == 0 ? "" : " " + this->asmstr_arg) << std::endl;
+            out << "\t." << this->asmstr << (this->asmstr_arg.size() == 0 ? "" : " " + this->asmstr_arg)
+                << getCommentStr2Inst() << std::endl;
             break;
         case AsmOp::CALL:
-            out << "\tcall\t" << this->label << std::endl;
+            out << "\tcall\t" << this->label
+                << getCommentStr2Inst() << std::endl;
             break;
         case AsmOp::L_S:
-            out << "\t" << this->opstr << "\t" << this->arg1 << ", " << this->arg2 << "(" << this->arg3 << ")" << std::endl;
+            out << "\t" << this->opstr << "\t" << this->arg1 << ", " << this->arg2 << "(" << this->arg3 << ")"
+                << getCommentStr2Inst() << std::endl;
             break;
         case AsmOp::LUI:
-            out << "\tlui\t" << this->arg1 << ", " << this->arg2 << std::endl;
+            out << "\tlui\t" << this->arg1 << ", " << this->arg2
+                << getCommentStr2Inst() << std::endl;
             break;
         case AsmOp::BNE:
-            out << "\tbne\t" << this->arg1 << ", " << this->arg2 << ", " << this->arg3 << std::endl;
+            out << "\tbne\t" << this->arg1 << ", " << this->arg2 << ", " << this->arg3
+                << getCommentStr2Inst() << std::endl;
             break;
         case AsmOp::JMP:
-            out << "\tj\t" << this->arg1 << std::endl;
+            out << "\tj\t" << this->arg1
+                << getCommentStr2Inst() << std::endl;
             break;
         case AsmOp::JR:
-            out << "\tjr\t" << this->arg1 << std::endl;
+            out << "\tjr\t" << this->arg1
+                << getCommentStr2Inst() << std::endl;
             break;
         case AsmOp::LA:
-            out << "\tla\t" << this->arg1 << ", " << this->arg2 << std::endl;
+            out << "\tla\t" << this->arg1 << ", " << this->arg2 << "  "
+                << getCommentStr2Inst() << std::endl;
             break;
         case AsmOp::LI:
-            out << "\tli\t" << this->arg1 << ", " << this->arg2 << std::endl;
+            out << "\tli\t" << this->arg1 << ", " << this->arg2 << "   "
+                << getCommentStr2Inst() << std::endl;
             break;
         case AsmOp::BINOP:
-            out << "\t" << this->opstr << "\t" << this->arg1 << ", " << this->arg2 << (this->arg3.size() == 0 ? "" : ", " + this->arg3) << std::endl;
+            out << "\t" << this->opstr << "\t" << this->arg1 << ", " << this->arg2 << (this->arg3.size() == 0 ? "" : ", " + this->arg3)
+                << getCommentStr2Inst() << std::endl;
             break;
         default:
-            out << "我还不认识( •̀ ω •́ )y" << std::endl;
+            out << "// 我还不认识( •̀ ω •́ )y" << std::endl;
             throw std::runtime_error("AsmCode::Dump(std::ostream &out): " + std::to_string((int)this->op) + " is not a valid asm op");
             break;
         }

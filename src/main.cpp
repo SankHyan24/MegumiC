@@ -27,7 +27,12 @@ int main(int argc, const char *argv[])
 
 	// generate ir here
 	auto ir = MC::IR::generate(ast);
-	if (MC::config::config->getEndMode() == MC::config::EndMode::IR)
+	if (MC::config::config->getFirstMode() == MC::config::FirstMode::Online)
+	{
+		ir->Dump();
+		MC::config::config->printOnlineSeprarator();
+	}
+	else if (MC::config::config->getEndMode() == MC::config::EndMode::IR)
 	{
 		ir->Dump(MC::config::config->getirOutputFileStream());
 		return 0;
@@ -38,7 +43,11 @@ int main(int argc, const char *argv[])
 
 	// optimize assembly here
 	auto asmfile = MC::OPT::generate(assembly->getString(), MC::config::config->getOptMode());
-	assembly->Dump(MC::config::config->getTargetOutputFileStream());
+	if (MC::config::config->getFirstMode() == MC::config::FirstMode::Online)
+		asmfile->Dump(std::cout);
+	else
+		assembly->Dump(MC::config::config->getTargetOutputFileStream());
 
+	// std::cout << "hello world" << std::endl;
 	return 0;
 }

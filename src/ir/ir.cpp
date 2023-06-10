@@ -2,6 +2,8 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <config.hpp>
+
 namespace
 {
     // mapping from BinOp:
@@ -231,17 +233,17 @@ namespace MC::IR
         IRType = MC::IR::IROp::GetPtr;
         dst = "    ";
         dst += Ptr + " = getptr " + Var + (Index.empty() ? ", 0" : ", " + Index);
-        dst += " // ";
-        dst += "类型：";
-        dst += ((IRGetElementPtrType == 0) ? "第一次" : "多次的");
-        dst += " 层数: " + std::to_string(Lvl);
-        dst += " Shape: ";
-        for (auto &i : this->this_lvl_shape)
-        {
-            dst += std::to_string(i);
-            if (&i != &this->this_lvl_shape.back())
-                dst += ", ";
-        }
+        // dst += " // ";
+        // dst += "类型：";
+        // dst += ((IRGetElementPtrType == 0) ? "第一次" : "多次的");
+        // dst += " 层数: " + std::to_string(Lvl);
+        // dst += " Shape: ";
+        // for (auto &i : this->this_lvl_shape)
+        // {
+        //     dst += std::to_string(i);
+        //     if (&i != &this->this_lvl_shape.back())
+        //         dst += ", ";
+        // }
     }
 
     void IRGetElementPtr::_generate()
@@ -251,17 +253,17 @@ namespace MC::IR
         IRType = MC::IR::IROp::GetElementPtr;
         dst = "    ";
         dst += Ptr + " = getelemptr " + Arr + ", " + Ind;
-        dst += " // ";
-        dst += "类型：";
-        dst += ((IRGetElementPtrType == 0) ? "第一次" : "多次的");
-        dst += " 层数: " + std::to_string(Lvl);
-        dst += " Shape: ";
-        for (auto &i : this->this_lvl_shape)
-        {
-            dst += std::to_string(i);
-            if (&i != &this->this_lvl_shape.back())
-                dst += ", ";
-        }
+        // dst += " // ";
+        // dst += "类型：";
+        // dst += ((IRGetElementPtrType == 0) ? "第一次" : "多次的");
+        // dst += " 层数: " + std::to_string(Lvl);
+        // dst += " Shape: ";
+        // for (auto &i : this->this_lvl_shape)
+        // {
+        //     dst += std::to_string(i);
+        //     if (&i != &this->this_lvl_shape.back())
+        //         dst += ", ";
+        // }
     }
 
     void IRStore::_generate()
@@ -318,7 +320,7 @@ namespace MC::IR
         for (int i = Shape.size() - 1; i >= 0; i--)
             dst += ", " + std::to_string(Shape[i]) + "]";
         dst += ", " + InitList;
-        dst += " // init buffer size:" + std::to_string(initbuffer.size());
+        // dst += " // init buffer size:" + std::to_string(initbuffer.size());
     }
 
     void IRVoid::_generate()
@@ -350,7 +352,7 @@ namespace MC::IR
 
     void IRListWrapper::Dump()
     {
-        std::cout << toString();
+        std::cout << toString() << std::endl;
     }
 
     void IRListWrapper::Dump(std::string filename)

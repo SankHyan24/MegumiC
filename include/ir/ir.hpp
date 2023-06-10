@@ -6,6 +6,8 @@
 #include <functional>
 #include <memory>
 
+#include <config.hpp>
+
 namespace MC::IR
 {
     enum class BinOp
@@ -83,7 +85,7 @@ namespace MC::IR
         std::string dump();
 
     private:
-        virtual void _generate() { std::cout << "cnd"; };
+        virtual void _generate(){};
     };
 
     class IRFuncDef : public IRcode
@@ -333,7 +335,7 @@ namespace MC::IR
     public:
         std::unique_ptr<IRList> irList;
         bool print_ir_line_number{true};
-        IRListWrapper() : irList(std::make_unique<IRList>()) {}
+        IRListWrapper() : irList(std::make_unique<IRList>()), print_ir_line_number(MC::config::print_ir_line_number) {}
         void Generate();
         void Dump();
         void Dump(std::string filename);

@@ -25,8 +25,8 @@ namespace MC::OPT
 
     void PeepholeOptimizer::_executeOptimizer(std::vector<AsmCode> &pre_opt_codes)
     {
-        std::cout << "Using Peephole Optimizer..." << std::endl;
+        *MC::config::log << "Using Peephole Optimizer..." << std::endl;
         scanStoreThenLoad(pre_opt_codes);
-        std::cout << "Peephole Optimization done" << std::endl;
+        *MC::config::log << "Peephole Optimization done" << std::endl;
     }
 }

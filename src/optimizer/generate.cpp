@@ -1,5 +1,6 @@
 #include <optimizer/generate.hpp>
 #include <optimizer/peephole.hpp>
+#include <config.hpp>
 
 namespace MC::OPT
 {
@@ -38,8 +39,18 @@ namespace MC::OPT
     {
         // delete the comments
         for (int i = 0; i < this->codes.size(); i++)
-            if (this->codes[i].getOp() == AsmOp::COMMENT)
-                this->codes.erase(this->codes.begin() + i);
+        {
+            if (i != this->codes.size() - 1) // if not the last
+            {
+                std::string comment = this->codes[i].getComment();
+                if (this->codes[i].getOp() == AsmOp::COMMENT) // if this line is a comment
+                {
+                    this->codes.erase(this->codes.begin() + i);
+                    if (this->codes[i].getOp() != AsmOp::COMMENT)
+                        this->codes[i].AddComment(comment);
+                }
+            }
+        }
     }
 
     void AsmFile::addOptimizer(Optimizer *optimizer)
@@ -55,7 +66,7 @@ namespace MC::OPT
         std::string rate_str = std::to_string(rate);
         rate_str = rate_str.substr(0, rate_str.find(".") + 3);
         rate = std::stof(rate_str);
-        std::cout << "Optimization: " << rate << "\% lines deleted." << std::endl;
+        *MC::config::log << "Optimization: " << rate << "\% lines deleted." << std::endl;
     }
 
     void AsmFile::Dump(std::ostream &out)

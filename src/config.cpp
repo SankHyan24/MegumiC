@@ -77,6 +77,11 @@ namespace MC::config::util
 
 namespace MC::config
 {
+    // variables
+    std::ostream *output = &std::cout;
+    std::ostream *log = &std::cout;
+    bool print_ir_line_number{true};
+    // functions
 
     Config::Config(int argc, const char *argv[])
     {
@@ -84,7 +89,7 @@ namespace MC::config
         openFileStream();
         if (!correct_input)
             first_mode = FirstMode::Help;
-        std::cout << color::GREEN << "Start" << color::RESET << std::endl;
+        *log << color::GREEN << "Start" << color::RESET << std::endl;
     }
     void Config::parse(int argc, const char *argv[])
     {
@@ -92,6 +97,23 @@ namespace MC::config
         std::vector<std::pair<bool, std::string>> args;
         for (int i = 1; i < argc; i++)
             argv[i][0] == '-' ? args.push_back(std::make_pair(true, argv[i])) : args.push_back(std::make_pair(false, argv[i]));
+        if (args[0].first && args[0].second[1] == 'o')
+        {
+            // online mode
+            // ./mc -o inputfilepath (-O1)
+            first_mode = FirstMode::Online;
+            start_mode = StartMode::MC;
+            end_mode = EndMode::RV32;
+            input_file = args[1].second;
+            if (args.size() > 2)
+                opt_mode = args[2].second[1] == 'O' ? (args[2].second[2] == '1' ? OptMode::O1 : (args[2].second[2] == '2' ? OptMode::O2 : OptMode::O3)) : OptMode::NONE;
+            // global config
+            print_ir_line_number = false;
+            output = new std::ofstream("/dev/null");
+            log = new std::ofstream("/dev/null");
+            return;
+        }
+
         std::vector<std::string> options;
         std::vector<std::pair<std::string, std::string>> option_pairs;
         for (int i = 0; i < args.size(); i++)
@@ -111,14 +133,15 @@ namespace MC::config
                 if (i != 0)
                 {
                     correct_input = false;
-                    std::cout << color::RED << "Wrong input args" << color::RESET << ": [" << color::CYAN << args[i].second << color::RESET << "]" << std::endl;
-                    std::cout << "  You should not put arg " << color::BLUE << args[i].second << color::RESET << " at this place." << std::endl;
-                    std::cout << "  You should put it after an option, like '-mc'" << std::endl;
+                    *log << color::RED << "Wrong input args" << color::RESET << ": [" << color::CYAN << args[i].second << color::RESET << "]" << std::endl;
+                    *log << "  You should not put arg " << color::BLUE << args[i].second << color::RESET << " at this place." << std::endl;
+                    *log << "  You should put it after an option, like '-mc'" << std::endl;
                     return;
                 }
                 options.push_back(args[i].second);
             }
         }
+
         // parse options
         bool first_mode_set{false};
         bool start_mode_set{false};
@@ -127,15 +150,15 @@ namespace MC::config
         bool first_option{true};
         for (auto &option : options)
         {
-            // std::cout << "options: " << options.size() << std::endl;
+            // *log << "options: " << options.size() << std::endl;
             if (!(option.compare("-v") && option.compare("-h") && option.compare("-c")))
             {
                 first_option = false;
                 if (first_mode_set)
                 {
                     correct_input = false;
-                    std::cout << color::RED << "Wrong input args" << color::RESET << ": [" << color::CYAN << option << color::RESET << "]" << std::endl;
-                    std::cout << "  You have set mode as" << color::BLUE << util::FirstMode2Str(first_mode) << color::RESET << std::endl;
+                    *log << color::RED << "Wrong input args" << color::RESET << ": [" << color::CYAN << option << color::RESET << "]" << std::endl;
+                    *log << "  You have set mode as" << color::BLUE << util::FirstMode2Str(first_mode) << color::RESET << std::endl;
                     return;
                 }
                 first_mode = option.compare("-v") ? (option.compare("-h") ? FirstMode::Compile : FirstMode::Help) : FirstMode::Version;
@@ -148,8 +171,8 @@ namespace MC::config
                 if (opt_mode_set)
                 {
                     correct_input = false;
-                    std::cout << color::RED << "Wrong input args" << color::RESET << ": [" << color::CYAN << option << color::RESET << "]" << std::endl;
-                    std::cout << "  You have set Optmode as" << color::BLUE << util::OptMode2Str(opt_mode) << color::RESET << std::endl;
+                    *log << color::RED << "Wrong input args" << color::RESET << ": [" << color::CYAN << option << color::RESET << "]" << std::endl;
+                    *log << "  You have set Optmode as" << color::BLUE << util::OptMode2Str(opt_mode) << color::RESET << std::endl;
                     return;
                 }
                 opt_mode = option.compare("-O1") ? (option.compare("-O2") ? OptMode::O3 : OptMode::O2) : OptMode::O1;
@@ -167,8 +190,8 @@ namespace MC::config
             else
             {
                 correct_input = false;
-                std::cout << color::RED << "Wrong input args" << color::RESET << ": [" << color::CYAN << option << color::RESET << "]" << std::endl;
-                std::cout << "  Unknown option " << color::BLUE << option << color::RESET << std::endl;
+                *log << color::RED << "Wrong input args" << color::RESET << ": [" << color::CYAN << option << color::RESET << "]" << std::endl;
+                *log << "  Unknown option " << color::BLUE << option << color::RESET << std::endl;
                 return;
             }
         }
@@ -181,16 +204,16 @@ namespace MC::config
                 if (start_mode_set)
                 {
                     correct_input = false;
-                    std::cout << color::RED << "Wrong input args" << color::RESET << ": [" << color::CYAN << option << color::RESET << "]" << std::endl;
-                    std::cout << "  You have set start mode as" << color::BLUE << util::StartMode2Str(start_mode) << color::RESET << std::endl;
+                    *log << color::RED << "Wrong input args" << color::RESET << ": [" << color::CYAN << option << color::RESET << "]" << std::endl;
+                    *log << "  You have set start mode as" << color::BLUE << util::StartMode2Str(start_mode) << color::RESET << std::endl;
                     return;
                 }
                 start_mode = option.compare("-mc") ? StartMode::IR : StartMode::MC;
                 if (start_mode == StartMode::IR)
                 {
                     correct_input = false;
-                    std::cout << color::RED << "Wrong input args" << color::RESET << ": [" << color::CYAN << option << color::RESET << "]" << std::endl;
-                    std::cout << "  IR mode is not implemented" << std::endl;
+                    *log << color::RED << "Wrong input args" << color::RESET << ": [" << color::CYAN << option << color::RESET << "]" << std::endl;
+                    *log << "  IR mode is not implemented" << std::endl;
                 }
                 input_file = value;
                 start_mode_set = true;
@@ -201,8 +224,8 @@ namespace MC::config
                 if (end_mode_set)
                 {
                     correct_input = false;
-                    std::cout << color::RED << "Wrong input args" << color::RESET << ": [" << color::CYAN << option << color::RESET << "]" << std::endl;
-                    std::cout << "  You have set end mode as" << color::BLUE << util::EndMode2Str(end_mode) << color::RESET << std::endl;
+                    *log << color::RED << "Wrong input args" << color::RESET << ": [" << color::CYAN << option << color::RESET << "]" << std::endl;
+                    *log << "  You have set end mode as" << color::BLUE << util::EndMode2Str(end_mode) << color::RESET << std::endl;
                     return;
                 }
                 end_mode = option.compare("-ir") ? (option.compare("-s") ? EndMode::Bin : EndMode::RV32) : EndMode::IR;
@@ -210,8 +233,8 @@ namespace MC::config
                 if (end_mode == EndMode::Bin)
                 {
                     correct_input = false;
-                    std::cout << color::RED << "Wrong input args" << color::RESET << ": [" << color::CYAN << option << color::RESET << "]" << std::endl;
-                    std::cout << "  Bin mode is not implemented" << std::endl;
+                    *log << color::RED << "Wrong input args" << color::RESET << ": [" << color::CYAN << option << color::RESET << "]" << std::endl;
+                    *log << "  Bin mode is not implemented" << std::endl;
                     return;
                 }
                 else if (end_mode == EndMode::RV32)
@@ -222,26 +245,26 @@ namespace MC::config
             else
             {
                 correct_input = false;
-                std::cout << color::RED << "Wrong input args" << color::RESET << ": [" << color::CYAN << option << color::RESET << "]" << std::endl;
-                std::cout << "  Unknown option " << color::BLUE << option << color::RESET << std::endl;
-                std::cout << "  Or option " << color::BLUE << option << color::RESET << " cannot be followed by a value" << std::endl;
+                *log << color::RED << "Wrong input args" << color::RESET << ": [" << color::CYAN << option << color::RESET << "]" << std::endl;
+                *log << "  Unknown option " << color::BLUE << option << color::RESET << std::endl;
+                *log << "  Or option " << color::BLUE << option << color::RESET << " cannot be followed by a value" << std::endl;
                 return;
             }
         }
         if (!correct_input)
             return;
         if (!first_mode_set)
-            std::cout << color::YELLOW << "Warning" << color::RESET << ": No first mode set. Use default mode: " << color::BLUE << util::FirstMode2Str(first_mode) << color::RESET << std::endl;
+            *log << color::YELLOW << "Warning" << color::RESET << ": No first mode set. Use default mode: " << color::BLUE << util::FirstMode2Str(first_mode) << color::RESET << std::endl;
         if (!start_mode_set)
-            std::cout << color::YELLOW << "Warning" << color::RESET << ": No start mode set. Use default mode: " << color::BLUE << util::StartMode2Str(start_mode) << color::RESET
-                      << " Using default input file path [" << color::BLUE << this->input_file << color::RESET << "]" << std::endl;
+            *log << color::YELLOW << "Warning" << color::RESET << ": No start mode set. Use default mode: " << color::BLUE << util::StartMode2Str(start_mode) << color::RESET
+                 << " Using default input file path [" << color::BLUE << this->input_file << color::RESET << "]" << std::endl;
         if (!end_mode_set)
-            std::cout << color::YELLOW << "Warning" << color::RESET << ": No end mode set. Use default mode: " << color::BLUE << util::EndMode2Str(end_mode) << color::RESET
-                      << " Using default output file path [" << color::BLUE << this->target_output_file << color::RESET << "]" << std::endl;
+            *log << color::YELLOW << "Warning" << color::RESET << ": No end mode set. Use default mode: " << color::BLUE << util::EndMode2Str(end_mode) << color::RESET
+                 << " Using default output file path [" << color::BLUE << this->target_output_file << color::RESET << "]" << std::endl;
         if (!opt_mode_set)
-            std::cout << color::YELLOW << "Warning" << color::RESET << ": No optimization mode set. Use default mode: " << color::BLUE << util::OptMode2Str(opt_mode) << color::RESET << std::endl;
+            *log << color::YELLOW << "Warning" << color::RESET << ": No optimization mode set. Use default mode: " << color::BLUE << util::OptMode2Str(opt_mode) << color::RESET << std::endl;
         if (!first_mode_set || !start_mode_set || !end_mode_set || !opt_mode_set)
-            std::cout << "  You can use -h to get help" << std::endl;
+            *log << "  You can use -h to get help" << std::endl;
     }
     void Config::openFileStream()
     {
@@ -256,7 +279,7 @@ namespace MC::config
     Config::~Config()
     {
         closeFileStream();
-        std::cout << color::GREEN << "Done" << color::RESET << std::endl;
+        *log << color::GREEN << "Done" << color::RESET << std::endl;
     }
     bool Config::configInfo(std::ostream &out) const
     {
@@ -281,7 +304,8 @@ namespace MC::config
         else if (first_mode == MC::config::FirstMode::Help)
             out << "Help:\n"
                 << help;
-        return correct_input && first_mode == MC::config::FirstMode::Compile;
+
+        return correct_input && (first_mode == MC::config::FirstMode::Compile || first_mode == MC::config::FirstMode::Online);
     }
 
     std::string &Config::getPreCode()
@@ -297,7 +321,7 @@ namespace MC::config
             precode_file.close();
         }
         else
-            std::cout << "No Precode file";
+            *log << "No Precode file";
         pre_code = res;
         return pre_code;
     }
@@ -314,7 +338,7 @@ namespace MC::config
             input_file_stream.close();
         }
         else
-            std::cout << "No Input file" << std::endl;
+            *log << "No Input file" << std::endl;
         if (if_use_precode)
             res = getPreCode() + res;
         input_code = res;
