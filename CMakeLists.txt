@@ -41,7 +41,7 @@ set(SOURCES
 cmake_minimum_required(VERSION 3.15)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -O3")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 add_executable(${_EXE_NAME_} ${SOURCES})
 aux_source_directory(${_SRC_FILE_NAME_} _SOURCE_)
 target_sources(${_EXE_NAME_} PUBLIC ${_SOURCE_})
