@@ -1,4 +1,3 @@
-
 static int PrintArr(int a[100], int n)
 {
 	int i = 0;
